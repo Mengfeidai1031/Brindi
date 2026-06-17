@@ -1,0 +1,55 @@
+# ============================================================
+# Brindi - Infraestructura local de desarrollo
+# Incremento actual: PostgreSQL + Redis.
+# Proximos incrementos anadiran: api (NestJS), web (Next.js),
+# ai-service (FastAPI) y nginx.
+# ============================================================
+name: brindi
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: brindi-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-brindi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD no definido. Ejecuta scripts/setup-local.sh}
+      POSTGRES_DB: ${POSTGRES_DB:-brindi}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - brindi-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-brindi} -d ${POSTGRES_DB:-brindi}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+
+  redis:
+    image: redis:7-alpine
+    container_name: brindi-redis
+    restart: unless-stopped
+    # Sin persistencia en disco a proposito: Redis solo guarda datos
+    # efimeros (sesiones, rate limiting, cache de Places). Alineado con
+    # el principio de privacidad del proyecto.
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - brindi-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 3s
+
+volumes:
+  postgres_data:
+
+networks:
+  brindi-net:
+    driver: bridge
