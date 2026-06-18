@@ -42,7 +42,7 @@ Desarrollo incremental; cada incremento es funcional y verificable.
 | # | Incremento | Estado |
 |---|------------|--------|
 | 1 | Scaffold del monorepo + infra local (PostgreSQL + Redis) + setup | ✅ |
-| 2 | API NestJS + Prisma (schema, migraciones, seed) + Swagger | ⏳ |
+| 2 | API NestJS + Prisma (schema, migraciones, seed) + Swagger | ✅ |
 | 3 | Autenticación email+password (JWT + refresh, rate limiting) | ⏳ |
 | 4 | Frontend Next.js 15 + Tailwind 4 + i18n + PWA + branding | ⏳ |
 | 5 | Registro/login/perfil conectados (enlace de pago opcional) | ⏳ |
@@ -73,14 +73,29 @@ El script verifica prerequisitos, crea `.env` a partir de `.env.example` generan
 Para parar todo:
 
 ```bash
-docker compose -f infra/docker-compose.yml down
+docker compose --env-file .env -f infra/docker-compose.yml down
 ```
+
+## API (apps/api)
+
+La API arranca dentro de Docker con `setup-local.sh`; en cada arranque el contenedor aplica las migraciones de Prisma pendientes y ejecuta el seed (ambos idempotentes). Endpoints disponibles en este incremento: `GET /health` (estado de API y base de datos) y la documentación OpenAPI en `http://localhost:4000/api/docs`.
+
+Para desarrollo directo con hot reload (sin reconstruir el contenedor):
+
+```bash
+cd apps/api
+npm install
+npm run start:dev   # lee DATABASE_URL del .env de la raíz (generada por setup-local.sh)
+```
+
+Comandos útiles desde `apps/api`: `npm run prisma:migrate:dev` (nueva migración), `npm run prisma:seed` (recargar preguntas de fallback).
 
 ## Estructura del repositorio
 
 ```
 brindi/
-├── apps/                  # (próximos incrementos) web, api, ai-service
+├── apps/
+│   └── api/               # Backend NestJS + Prisma (health, Swagger, migraciones, seed)
 ├── packages/              # (próximos incrementos) shared-types
 ├── assets/branding/       # logo e icono oficiales
 ├── infra/                 # docker-compose.yml (+ nginx y prod más adelante)
@@ -97,6 +112,12 @@ brindi/
 - **Redis sin persistencia en disco** (`--save "" --appendonly no`): solo aloja datos efímeros (sesiones, rate limiting, caché de Places), coherente con el principio de privacidad.
 - **Secretos autogenerados**: `setup-local.sh` genera `JWT_SECRET` y `POSTGRES_PASSWORD` aleatorios en la primera ejecución; nunca hay secretos reales en el repositorio.
 - **PostgreSQL 16 / Redis 7 en imágenes Alpine**: ligeras y suficientes para desarrollo; misma versión mayor que se usará en producción.
+- **Prisma sin motores binarios** (`engineType = "client"` + driver adapter `@prisma/adapter-pg`): el cliente usa el query compiler WASM incluido en el propio paquete npm, eliminando la descarga de binarios Rust. Builds de Docker más rápidos y menos puntos de fallo; las migraciones siguen usando la CLI estándar de Prisma (`migrate deploy` en el arranque del contenedor).
+- **Enums nativos de PostgreSQL** (`QuizCategory`, `QuizLevel`, `AiService`) para integridad de datos en lugar de strings libres.
+- **Columna `locale` en `quiz_fallback_questions`** (default `es`): el mínimo de 10 preguntas por categoría se cumple en español; permitirá añadir el set en inglés sin tocar el esquema.
+- **`password_hash` opcional en `users`**: los usuarios que entren solo con Google OAuth no tienen contraseña local.
+- **`@@unique([category, question])`**: habilita un seed idempotente (`createMany` + `skipDuplicates`) que se ejecuta en cada arranque del contenedor sin duplicar filas.
+- **Migración inicial versionada y revisada a mano** con el formato exacto del generador de Prisma, aplicada y verificada contra PostgreSQL 16.
 
 ## Licencia
 
