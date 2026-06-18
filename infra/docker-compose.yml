@@ -1,8 +1,8 @@
 # ============================================================
 # Brindi - Infraestructura local de desarrollo
-# Incremento actual: PostgreSQL + Redis.
-# Proximos incrementos anadiran: api (NestJS), web (Next.js),
-# ai-service (FastAPI) y nginx.
+# Servicios actuales: PostgreSQL + Redis + API (NestJS).
+# Próximos incrementos añadirán: web (Next.js), ai-service
+# (FastAPI) y nginx.
 # ============================================================
 name: brindi
 
@@ -32,8 +32,8 @@ services:
     image: redis:7-alpine
     container_name: brindi-redis
     restart: unless-stopped
-    # Sin persistencia en disco a proposito: Redis solo guarda datos
-    # efimeros (sesiones, rate limiting, cache de Places). Alineado con
+    # Sin persistencia en disco a propósito: Redis solo guarda datos
+    # efímeros (sesiones, rate limiting, caché de Places). Alineado con
     # el principio de privacidad del proyecto.
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     ports:
@@ -46,6 +46,35 @@ services:
       timeout: 3s
       retries: 12
       start_period: 3s
+
+  api:
+    build:
+      context: ../apps/api
+    container_name: brindi-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      APP_NAME: ${APP_NAME:-Brindi}
+      API_PORT: "4000"
+      # Dentro de la red de Compose, la API habla con el servicio "postgres".
+      DATABASE_URL: postgresql://${POSTGRES_USER:-brindi}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-brindi}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET no definido. Ejecuta scripts/setup-local.sh}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
+    ports:
+      - "${API_PORT:-4000}:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - brindi-net
+    healthcheck:
+      # El entrypoint aplica migraciones + seed antes de arrancar,
+      # de ahí el start_period generoso para el primer arranque.
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/health >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
 
 volumes:
   postgres_data:
