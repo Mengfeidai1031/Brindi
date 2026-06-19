@@ -43,7 +43,7 @@ Desarrollo incremental; cada incremento es funcional y verificable.
 |---|------------|--------|
 | 1 | Scaffold del monorepo + infra local (PostgreSQL + Redis) + setup | ✅ |
 | 2 | API NestJS + Prisma (schema, migraciones, seed) + Swagger | ✅ |
-| 3 | Autenticación email+password (JWT + refresh, rate limiting) | ⏳ |
+| 3 | Autenticación email+password (JWT + refresh, rate limiting) | ✅ |
 | 4 | Frontend Next.js 15 + Tailwind 4 + i18n + PWA + branding | ⏳ |
 | 5 | Registro/login/perfil conectados (enlace de pago opcional) | ⏳ |
 | 6 | DIVIDE: wizard completo con cálculo en cliente | ⏳ |
@@ -78,7 +78,20 @@ docker compose --env-file .env -f infra/docker-compose.yml down
 
 ## API (apps/api)
 
-La API arranca dentro de Docker con `setup-local.sh`; en cada arranque el contenedor aplica las migraciones de Prisma pendientes y ejecuta el seed (ambos idempotentes). Endpoints disponibles en este incremento: `GET /health` (estado de API y base de datos) y la documentación OpenAPI en `http://localhost:4000/api/docs`.
+La API arranca dentro de Docker con `setup-local.sh`; en cada arranque el contenedor aplica las migraciones de Prisma pendientes y ejecuta el seed (ambos idempotentes). Endpoints actuales (detalle completo en Swagger, `http://localhost:4000/api/docs`):
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/health` | Estado de API y base de datos |
+| POST | `/auth/register` | Registro email+password (bcrypt 12 rondas) — 10 req/min |
+| POST | `/auth/login` | Login; devuelve access token y rota la cookie de refresco — 10 req/min |
+| POST | `/auth/refresh` | Renueva el access token desde la cookie httpOnly (rotación) |
+| POST | `/auth/logout` | Elimina la cookie de refresco |
+| GET | `/users/me` | Perfil del usuario autenticado (Bearer) |
+| PATCH | `/users/me` | Actualiza nombre, idioma o enlace de pago propio |
+| DELETE | `/users/me` | Baja lógica de la cuenta (`deleted_at`) |
+
+El access token (15 min) viaja como `Authorization: Bearer`; el refresh token (7 días) vive en una cookie `httpOnly` con `SameSite=Strict` y `path=/auth`, y se rota en cada refresco.
 
 Para desarrollo directo con hot reload (sin reconstruir el contenedor):
 
@@ -118,6 +131,11 @@ brindi/
 - **`password_hash` opcional en `users`**: los usuarios que entren solo con Google OAuth no tienen contraseña local.
 - **`@@unique([category, question])`**: habilita un seed idempotente (`createMany` + `skipDuplicates`) que se ejecuta en cada arranque del contenedor sin duplicar filas.
 - **Migración inicial versionada y revisada a mano** con el formato exacto del generador de Prisma, aplicada y verificada contra PostgreSQL 16.
+- **bcryptjs (12 rondas)** en lugar del `bcrypt` nativo: mismo algoritmo, implementación JS pura que evita la toolchain de compilación nativa en imágenes Alpine (builds reproducibles y más simples).
+- **Refresh token stateless con rotación**: JWT de refresco (7 días) en cookie `httpOnly` + `SameSite=Strict` + `path=/auth`, firmado con un secreto distinto al del access token (15 min). Sin tabla de tokens (esquema minimalista): el logout elimina la cookie y la baja lógica invalida cualquier token al instante porque la estrategia JWT consulta `deleted_at` en cada petición. Trade-off documentado: no hay lista de revocación server-side.
+- **Rate limiting con `@nestjs/throttler`**: 10 req/min en login/registro (equivalente a `throttle:10,1`), límite global laxo de 100 req/min. Almacenamiento en memoria por ahora; pasará a Redis cuando haya varias instancias.
+- **Anti-enumeración en login**: mensaje idéntico (`Credenciales inválidas`) tanto si el email no existe como si la contraseña falla o la cuenta está dada de baja.
+- **Baja lógica (`deleted_at`)**: el email no es reutilizable tras la baja (índice único); una futura reactivación se haría por soporte/proceso explícito.
 
 ## Licencia
 

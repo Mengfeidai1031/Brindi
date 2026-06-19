@@ -16,12 +16,15 @@ class EnvironmentVariables {
   @MinLength(1, { message: 'DATABASE_URL es obligatoria (postgresql://...)' })
   DATABASE_URL!: string;
 
-  // Requerido a partir del incremento de autenticación; si está presente,
-  // exigimos longitud mínima para evitar secretos débiles.
-  @IsOptional()
+  // Secretos de firma JWT: access y refresh usan secretos distintos.
+  // Longitud mínima para evitar secretos débiles (setup-local.sh genera 64 hex).
   @IsString()
   @MinLength(32, { message: 'JWT_SECRET debe tener al menos 32 caracteres' })
-  JWT_SECRET?: string;
+  JWT_SECRET!: string;
+
+  @IsString()
+  @MinLength(32, { message: 'JWT_REFRESH_SECRET debe tener al menos 32 caracteres' })
+  JWT_REFRESH_SECRET!: string;
 
   @IsOptional()
   @IsInt()

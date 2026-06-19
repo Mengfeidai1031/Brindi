@@ -70,9 +70,10 @@ fi
 
 # Claves que pueden faltar en .env creados con versiones anteriores.
 ensure_env_line DATABASE_URL
+ensure_env_line JWT_REFRESH_SECRET
 
 # Genera cualquier secreto que siga con el placeholder.
-for key in JWT_SECRET POSTGRES_PASSWORD; do
+for key in JWT_SECRET JWT_REFRESH_SECRET POSTGRES_PASSWORD; do
   if grep -q "^${key}=${PLACEHOLDER}$" "$ENV_FILE"; then
     set_env_value "$key" "$(gen_secret)"
     ok "Secreto ${key} generado automáticamente"

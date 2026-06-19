@@ -53,12 +53,14 @@ services:
     container_name: brindi-api
     restart: unless-stopped
     environment:
-      NODE_ENV: production
+      # development en local: las cookies "secure" solo se exigen en producción.
+      NODE_ENV: ${NODE_ENV:-development}
       APP_NAME: ${APP_NAME:-Brindi}
       API_PORT: "4000"
       # Dentro de la red de Compose, la API habla con el servicio "postgres".
       DATABASE_URL: postgresql://${POSTGRES_USER:-brindi}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-brindi}?schema=public
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET no definido. Ejecuta scripts/setup-local.sh}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET no definido. Ejecuta scripts/setup-local.sh}
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
     ports:
       - "${API_PORT:-4000}:4000"
