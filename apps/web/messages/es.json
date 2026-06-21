@@ -1,0 +1,133 @@
+{
+  "meta": {
+    "description": "Divide la cuenta con una foto del ticket, decide con juegos de grupo y deja que la IA os proponga el plan. Gratis y con privacidad por diseño."
+  },
+  "common": {
+    "appName": "Brindi",
+    "skipToContent": "Saltar al contenido"
+  },
+  "nav": {
+    "home": "Inicio",
+    "divide": "Divide",
+    "decide": "Decide",
+    "plan": "Plan",
+    "main": "Navegación principal",
+    "tabs": "Navegación inferior"
+  },
+  "locale": {
+    "label": "Idioma",
+    "es": "Español",
+    "en": "Inglés"
+  },
+  "theme": {
+    "toDark": "Activar modo oscuro",
+    "toLight": "Activar modo claro"
+  },
+  "home": {
+    "kicker": "La app para cuando quedáis",
+    "tagline": {
+      "divide": "Divide.",
+      "decide": "Decide.",
+      "plan": "Plan."
+    },
+    "subtitle": "Reparte la cuenta en segundos, decide quién paga con juegos y deja que la IA os monte el plan con sitios reales cerca de vosotros.",
+    "modulesHeading": "Tres módulos, una quedada redonda",
+    "open": "Abrir módulo",
+    "modules": {
+      "divide": {
+        "name": "Divide",
+        "description": "Foto del ticket o entrada manual, cuatro modos de reparto y un mensaje listo para compartir con quién paga a quién."
+      },
+      "decide": {
+        "name": "Decide",
+        "description": "Ruleta, cartas, toque simultáneo y quizzes con IA. Que la suerte (o el saber) decida por vosotros."
+      },
+      "plan": {
+        "name": "Plan",
+        "description": "Decid dónde estáis, cuántos sois y cuánto tiempo tenéis: la IA os propone un plan con lugares reales."
+      }
+    },
+    "privacy": {
+      "title": "Tu privacidad, primero",
+      "text": "No guardamos tickets, importes, ubicaciones ni resultados de juegos. Todo se calcula en tu dispositivo y se descarta al terminar."
+    }
+  },
+  "modulePages": {
+    "badge": "En construcción",
+    "intro": "Este módulo llega en un próximo incremento. Esto es lo que incluirá:"
+  },
+  "divide": {
+    "name": "Divide",
+    "lead": "La calculadora de cuentas para grupos: del ticket al \"quién paga a quién\" sin discusiones.",
+    "features": {
+      "ocr": {
+        "title": "Foto del ticket",
+        "desc": "OCR con IA que extrae items, cantidades y totales en una tabla editable."
+      },
+      "manual": {
+        "title": "Entrada manual",
+        "desc": "Añade items y precios a mano en segundos, sin foto."
+      },
+      "modes": {
+        "title": "Cuatro modos de reparto",
+        "desc": "Partes iguales, por consumo, porcentajes personalizados o extra fijo para alguien."
+      },
+      "share": {
+        "title": "Resultado compartible",
+        "desc": "Mensaje formateado para WhatsApp con los importes y el enlace de pago de cada uno."
+      }
+    }
+  },
+  "decide": {
+    "name": "Decide",
+    "lead": "Juegos rápidos y visuales para decidir cualquier cosa en grupo, pensados para el móvil.",
+    "features": {
+      "roulette": {
+        "title": "Ruleta",
+        "desc": "Gira con física realista y celebra al elegido con confeti."
+      },
+      "cards": {
+        "title": "Cartas",
+        "desc": "Cada uno voltea una carta del mazo; una está marcada."
+      },
+      "touch": {
+        "title": "Toque simultáneo",
+        "desc": "Todos ponen un dedo en la pantalla y la app elige uno tras la cuenta atrás."
+      },
+      "groupQuiz": {
+        "title": "¿Quién de aquí…?",
+        "desc": "Preguntas para votar entre vosotros y reíros con el resultado."
+      },
+      "trivia": {
+        "title": "Trivia con IA",
+        "desc": "Preguntas del tema y nivel que elijáis, de Fácil a Imposible. Funciona incluso sin conexión."
+      }
+    }
+  },
+  "plan": {
+    "name": "Plan",
+    "lead": "Un plan a medida con lugares reales de vuestra zona, generado por IA.",
+    "features": {
+      "location": {
+        "title": "Vuestra zona",
+        "desc": "Usa tu ubicación con permiso explícito o escribe una ciudad."
+      },
+      "prefs": {
+        "title": "A vuestra medida",
+        "desc": "Personas, tipo de plan, presupuesto y tiempo disponible."
+      },
+      "ai": {
+        "title": "Plan narrativo con IA",
+        "desc": "De una a tres paradas reales, con el porqué y el orden ideal."
+      },
+      "directions": {
+        "title": "Cómo llegar",
+        "desc": "Abre la ruta directamente en tu app de mapas favorita."
+      }
+    }
+  },
+  "footer": {
+    "privacy": "Privacidad por diseño: tus datos no se guardan.",
+    "rights": "Código abierto bajo licencia MIT."
+  }
+}

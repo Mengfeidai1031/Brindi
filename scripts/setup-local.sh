@@ -3,11 +3,11 @@
 # Brindi - Setup local automatizado
 # ------------------------------------------------------------
 # Incremento actual: verifica prerequisitos, prepara .env con
-# secretos autogenerados, construye y levanta PostgreSQL, Redis
-# y la API (NestJS). El contenedor de la API aplica las
+# secretos autogenerados, construye y levanta PostgreSQL, Redis,
+# la API (NestJS) y la web (Next.js). El contenedor de la API aplica las
 # migraciones de Prisma y el seed automáticamente al arrancar.
 #
-# Próximos incrementos añadirán web (Next.js) y ai-service.
+# Próximos incrementos añadirán el ai-service (FastAPI).
 #
 # Uso:  ./scripts/setup-local.sh
 # ============================================================
@@ -119,6 +119,7 @@ wait_healthy brindi-postgres 40
 wait_healthy brindi-redis 40
 # El primer arranque de la API incluye migraciones + seed.
 wait_healthy brindi-api 90
+wait_healthy brindi-web 90
 
 # ---------- 5. Verificación del seed ----------
 QUESTION_COUNT="$(compose exec -T postgres psql -U "${POSTGRES_USER:-brindi}" -d "${POSTGRES_DB:-brindi}" -tAc 'SELECT count(*) FROM quiz_fallback_questions;' 2>/dev/null | tr -d '[:space:]' || true)"
@@ -130,7 +131,8 @@ fi
 
 # ---------- 6. Resumen ----------
 echo
-ok "Brindi está corriendo"
+ok "Brindi está corriendo en http://localhost:${WEB_PORT:-3000}"
+info "Web        : http://localhost:${WEB_PORT:-3000}  (en /en en inglés)"
 info "API        : http://localhost:${API_PORT:-4000}"
 info "API docs   : http://localhost:${API_PORT:-4000}/api/docs"
 info "Healthcheck: http://localhost:${API_PORT:-4000}/health"

@@ -78,6 +78,27 @@ services:
       retries: 12
       start_period: 40s
 
+  web:
+    build:
+      context: ../apps/web
+      args:
+        # Las variables NEXT_PUBLIC_* se inyectan en el bundle en build time.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
+    container_name: brindi-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    networks:
+      - brindi-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
 volumes:
   postgres_data:
 
