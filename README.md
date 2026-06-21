@@ -44,7 +44,7 @@ Desarrollo incremental; cada incremento es funcional y verificable.
 | 1 | Scaffold del monorepo + infra local (PostgreSQL + Redis) + setup | ✅ |
 | 2 | API NestJS + Prisma (schema, migraciones, seed) + Swagger | ✅ |
 | 3 | Autenticación email+password (JWT + refresh, rate limiting) | ✅ |
-| 4 | Frontend Next.js 15 + Tailwind 4 + i18n + PWA + branding | ⏳ |
+| 4 | Frontend Next.js 15 + Tailwind 4 + i18n + PWA + branding | ✅ |
 | 5 | Registro/login/perfil conectados (enlace de pago opcional) | ⏳ |
 | 6 | DIVIDE: wizard completo con cálculo en cliente | ⏳ |
 | 7 | ai-service (FastAPI) + cascada Gemini + OCR de tickets | ⏳ |
@@ -103,12 +103,31 @@ npm run start:dev   # lee DATABASE_URL del .env de la raíz (generada por setup-
 
 Comandos útiles desde `apps/api`: `npm run prisma:migrate:dev` (nueva migración), `npm run prisma:seed` (recargar preguntas de fallback).
 
+## Frontend (apps/web)
+
+Next.js 15 (App Router) + TypeScript + Tailwind CSS 4, con Framer Motion para animaciones y Lucide para iconografía (nunca emojis en la UI). Disponible en `http://localhost:3000` tras el `setup-local.sh`.
+
+- **Idiomas**: español en `/` (por defecto) e inglés en `/en`, con next-intl. El idioma se detecta del navegador en la primera visita y el selector manual persiste la elección en la cookie `NEXT_LOCALE`.
+- **Tema claro/oscuro**: conmutable y siguiendo el sistema por defecto, con tokens de color auditables para contraste.
+- **PWA**: manifest con iconos (incluye maskable) y service worker propio con caché de estáticos y página offline. El modo offline completo de los quizzes de DECIDE llega en su incremento.
+- **Navegación**: header con navegación en escritorio y barra de pestañas inferior estilo app en móvil (mobile-first).
+- Los tres módulos (Divide, Decide, Plan) son por ahora páginas de avance navegables; se implementan en sus incrementos.
+
+Para desarrollo con hot reload:
+
+```bash
+cd apps/web
+npm install
+npm run dev   # http://localhost:3000
+```
+
 ## Estructura del repositorio
 
 ```
 brindi/
 ├── apps/
-│   └── api/               # Backend NestJS + Prisma (health, Swagger, migraciones, seed)
+│   ├── api/               # Backend NestJS + Prisma (health, Swagger, migraciones, seed)
+│   └── web/               # Frontend Next.js 15 (PWA, i18n ES/EN, Tailwind 4)
 ├── packages/              # (próximos incrementos) shared-types
 ├── assets/branding/       # logo e icono oficiales
 ├── infra/                 # docker-compose.yml (+ nginx y prod más adelante)
@@ -136,6 +155,11 @@ brindi/
 - **Rate limiting con `@nestjs/throttler`**: 10 req/min en login/registro (equivalente a `throttle:10,1`), límite global laxo de 100 req/min. Almacenamiento en memoria por ahora; pasará a Redis cuando haya varias instancias.
 - **Anti-enumeración en login**: mensaje idéntico (`Credenciales inválidas`) tanto si el email no existe como si la contraseña falla o la cuenta está dada de baja.
 - **Baja lógica (`deleted_at`)**: el email no es reutilizable tras la baja (índice único); una futura reactivación se haría por soporte/proceso explícito.
+- **i18n con prefijo "as-needed"**: el español (mercado principal) vive en la raíz `/` y el inglés en `/en`; la selección manual persiste vía cookie `NEXT_LOCALE` gestionada por el middleware de next-intl.
+- **Tipografía de sistema** (display redondeado `ui-rounded` con fallbacks): cero descargas de fuentes externas, builds reproducibles incluso sin red; sustituible por `next/font` si algún día se quiere una fuente propia.
+- **Tokens de marca en Tailwind 4 (`@theme`)** derivados del logo: un color por módulo (Divide verde, Decide ámbar, Plan azul) sobre tinta verdosa y papel crema, con variantes claro/oscuro semánticas (`background`, `surface`, `muted`, `line`).
+- **Service worker propio y versionado a mano** (sin librerías): cache-first para estáticos inmutables, network-first con página offline para navegaciones. Pequeño, auditable y suficiente para la PWA.
+- **Accesibilidad desde la base**: skip-link, foco visible global, `aria-current` en navegación, iconos decorativos con `aria-hidden` y `prefers-reduced-motion` respetado por CSS y por Framer Motion (`MotionConfig reducedMotion="user"`).
 
 ## Licencia
 
