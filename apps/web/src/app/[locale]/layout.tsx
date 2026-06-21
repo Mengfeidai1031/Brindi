@@ -7,6 +7,7 @@ import { Header } from '@/components/layout/header';
 import { MobileTabBar } from '@/components/layout/mobile-tab-bar';
 import { Providers } from '@/components/providers';
 import { PwaRegister } from '@/components/pwa-register';
+import { AuthBootstrap } from '@/components/auth/auth-bootstrap';
 import { APP_NAME } from '@/config/app';
 import { routing } from '@/i18n/routing';
 import '../globals.css';
@@ -74,6 +75,7 @@ export default async function LocaleLayout({
             <Footer />
             <MobileTabBar />
             <PwaRegister />
+            <AuthBootstrap />
           </NextIntlClientProvider>
         </Providers>
       </body>

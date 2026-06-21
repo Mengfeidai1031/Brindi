@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
+import { AuthNav } from '@/components/auth/auth-nav';
 import { LocaleSwitcher } from '@/components/locale-switcher';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { APP_NAME } from '@/config/app';
@@ -20,6 +21,8 @@ export async function Header() {
           <NavLinks />
         </nav>
         <div className="flex items-center gap-1.5">
+          <AuthNav />
+          <span className="mx-0.5 h-5 w-px bg-line" aria-hidden="true" />
           <LocaleSwitcher />
           <ThemeToggle />
         </div>

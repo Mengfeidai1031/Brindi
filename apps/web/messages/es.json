@@ -23,6 +23,77 @@
     "toDark": "Activar modo oscuro",
     "toLight": "Activar modo claro"
   },
+  "auth": {
+    "nav": {
+      "login": "Entrar",
+      "account": "Mi cuenta"
+    },
+    "login": {
+      "title": "Bienvenido de nuevo",
+      "subtitle": "Entra para gestionar tu cuenta y tu enlace de pago.",
+      "submit": "Entrar",
+      "submitting": "Entrando…",
+      "noAccount": "¿Aún no tienes cuenta?",
+      "switchToRegister": "Crear cuenta"
+    },
+    "register": {
+      "title": "Crea tu cuenta",
+      "subtitle": "Regístrate para guardar tu perfil. Nada de tickets, importes ni ubicaciones.",
+      "submit": "Crear cuenta",
+      "submitting": "Creando…",
+      "hasAccount": "¿Ya tienes cuenta?",
+      "switchToLogin": "Entrar"
+    },
+    "fields": {
+      "name": "Nombre",
+      "namePlaceholder": "Tu nombre",
+      "email": "Email",
+      "emailPlaceholder": "tu@email.com",
+      "password": "Contraseña",
+      "passwordHint": "Mínimo 8 caracteres."
+    },
+    "errors": {
+      "emailInvalid": "Introduce un email válido.",
+      "passwordShort": "La contraseña debe tener al menos 8 caracteres.",
+      "nameRequired": "El nombre es obligatorio.",
+      "emailTaken": "Ese email ya está registrado. ¿Quieres entrar?",
+      "invalidCredentials": "Email o contraseña incorrectos.",
+      "generic": "Algo ha ido mal. Inténtalo de nuevo."
+    }
+  },
+  "account": {
+    "title": "Mi cuenta",
+    "subtitle": "Gestiona tu perfil y tu sesión.",
+    "loading": "Cargando tu cuenta…",
+    "session": {
+      "title": "Sesión",
+      "email": "Email",
+      "memberSince": "Miembro desde",
+      "logout": "Cerrar sesión"
+    },
+    "profile": {
+      "title": "Perfil",
+      "name": "Nombre",
+      "paymentLink": "Enlace de pago (opcional)",
+      "paymentLinkHint": "Tu enlace propio para cobrar (PayPal.me, Bizum, etc.). Debe empezar por https://",
+      "paymentLinkPlaceholder": "https://paypal.me/tunombre",
+      "nameRequired": "El nombre no puede estar vacío.",
+      "paymentLinkInvalid": "El enlace debe ser una URL que empiece por https://",
+      "save": "Guardar cambios",
+      "saving": "Guardando…",
+      "saved": "Guardado",
+      "saveError": "No se pudo guardar. Inténtalo de nuevo."
+    },
+    "danger": {
+      "title": "Eliminar cuenta",
+      "description": "Tu cuenta se desactivará y dejarás de poder iniciar sesión. Esta acción no se puede deshacer.",
+      "delete": "Eliminar mi cuenta",
+      "confirmText": "¿Seguro que quieres eliminar tu cuenta? No podrás recuperarla.",
+      "confirm": "Sí, eliminar",
+      "cancel": "Cancelar",
+      "deleting": "Eliminando…"
+    }
+  },
   "home": {
     "kicker": "La app para cuando quedáis",
     "tagline": {
