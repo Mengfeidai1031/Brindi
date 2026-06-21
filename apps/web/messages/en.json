@@ -23,6 +23,77 @@
     "toDark": "Switch to dark mode",
     "toLight": "Switch to light mode"
   },
+  "auth": {
+    "nav": {
+      "login": "Log in",
+      "account": "My account"
+    },
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Log in to manage your account and payment link.",
+      "submit": "Log in",
+      "submitting": "Logging in…",
+      "noAccount": "Don't have an account yet?",
+      "switchToRegister": "Create account"
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "Sign up to save your profile. No receipts, amounts or locations.",
+      "submit": "Create account",
+      "submitting": "Creating…",
+      "hasAccount": "Already have an account?",
+      "switchToLogin": "Log in"
+    },
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "you@email.com",
+      "password": "Password",
+      "passwordHint": "At least 8 characters."
+    },
+    "errors": {
+      "emailInvalid": "Enter a valid email.",
+      "passwordShort": "Password must be at least 8 characters.",
+      "nameRequired": "Name is required.",
+      "emailTaken": "That email is already registered. Want to log in?",
+      "invalidCredentials": "Wrong email or password.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "account": {
+    "title": "My account",
+    "subtitle": "Manage your profile and session.",
+    "loading": "Loading your account…",
+    "session": {
+      "title": "Session",
+      "email": "Email",
+      "memberSince": "Member since",
+      "logout": "Log out"
+    },
+    "profile": {
+      "title": "Profile",
+      "name": "Name",
+      "paymentLink": "Payment link (optional)",
+      "paymentLinkHint": "Your own link to get paid (PayPal.me, etc.). Must start with https://",
+      "paymentLinkPlaceholder": "https://paypal.me/yourname",
+      "nameRequired": "Name can't be empty.",
+      "paymentLinkInvalid": "The link must be a URL starting with https://",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "saveError": "Couldn't save. Please try again."
+    },
+    "danger": {
+      "title": "Delete account",
+      "description": "Your account will be deactivated and you won't be able to log in. This action can't be undone.",
+      "delete": "Delete my account",
+      "confirmText": "Are you sure you want to delete your account? You won't be able to recover it.",
+      "confirm": "Yes, delete",
+      "cancel": "Cancel",
+      "deleting": "Deleting…"
+    }
+  },
   "home": {
     "kicker": "The app for when you meet up",
     "tagline": {

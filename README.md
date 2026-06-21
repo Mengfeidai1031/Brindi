@@ -45,7 +45,7 @@ Desarrollo incremental; cada incremento es funcional y verificable.
 | 2 | API NestJS + Prisma (schema, migraciones, seed) + Swagger | ✅ |
 | 3 | Autenticación email+password (JWT + refresh, rate limiting) | ✅ |
 | 4 | Frontend Next.js 15 + Tailwind 4 + i18n + PWA + branding | ✅ |
-| 5 | Registro/login/perfil conectados (enlace de pago opcional) | ⏳ |
+| 5 | Registro/login/perfil conectados (enlace de pago opcional) | ✅ |
 | 6 | DIVIDE: wizard completo con cálculo en cliente | ⏳ |
 | 7 | ai-service (FastAPI) + cascada Gemini + OCR de tickets | ⏳ |
 | 8 | DECIDE: ruleta, cartas, toque simultáneo | ⏳ |
@@ -112,6 +112,7 @@ Next.js 15 (App Router) + TypeScript + Tailwind CSS 4, con Framer Motion para an
 - **PWA**: manifest con iconos (incluye maskable) y service worker propio con caché de estáticos y página offline. El modo offline completo de los quizzes de DECIDE llega en su incremento.
 - **Navegación**: header con navegación en escritorio y barra de pestañas inferior estilo app en móvil (mobile-first).
 - Los tres módulos (Divide, Decide, Plan) son por ahora páginas de avance navegables; se implementan en sus incrementos.
+- **Cuenta de usuario**: registro, inicio de sesión y página de cuenta (`/login`, `/register`, `/account`) conectados a la API. El perfil permite editar el nombre y un enlace de pago propio opcional (solo `https://`), y dar de baja la cuenta. La cabecera muestra **Entrar** o **Mi cuenta** según el estado de sesión.
 
 Para desarrollo con hot reload:
 
@@ -160,6 +161,10 @@ brindi/
 - **Tokens de marca en Tailwind 4 (`@theme`)** derivados del logo: un color por módulo (Divide verde, Decide ámbar, Plan azul) sobre tinta verdosa y papel crema, con variantes claro/oscuro semánticas (`background`, `surface`, `muted`, `line`).
 - **Service worker propio y versionado a mano** (sin librerías): cache-first para estáticos inmutables, network-first con página offline para navegaciones. Pequeño, auditable y suficiente para la PWA.
 - **Accesibilidad desde la base**: skip-link, foco visible global, `aria-current` en navegación, iconos decorativos con `aria-hidden` y `prefers-reduced-motion` respetado por CSS y por Framer Motion (`MotionConfig reducedMotion="user"`).
+- **Access token solo en memoria**: el token de acceso se guarda en el estado de la app (Zustand), nunca en `localStorage` ni `sessionStorage` (no es legible por XSS). Al cargar la app se rehidrata la sesión llamando a `/auth/refresh`, que usa la cookie `httpOnly`; así la sesión persiste entre recargas (los 7 días del refresh token) sin exponer credenciales.
+- **Refresco transparente ante 401**: el cliente de API reintenta una vez tras refrescar el token, con _single-flight_ (varias peticiones que caduquen a la vez comparten un único refresco). Si el refresco falla, se limpia la sesión y se redirige a `/login`.
+- **Mensajes de error localizados por código de estado**: la validación de formularios ocurre en cliente y los errores del servidor (409 email duplicado, 401 credenciales) se traducen en el frontend según el código HTTP, en lugar de mostrar el texto en español de la API a usuarios en inglés.
+- **Color sin ser el único canal**: los estados de éxito/error combinan color con icono y texto; se añadió un token de "peligro" que se adapta a claro/oscuro para cumplir contraste AA en ambos temas, y los botones primarios usan el teal profundo para garantizar 4.5:1 sobre texto blanco.
 
 ## Licencia
 

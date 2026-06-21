@@ -15,6 +15,8 @@
   --color-decide: #d9970f;
   --color-plan: #2387bd;
   --color-coral: #e2574c;
+  /* Rojo profundo fijo para botones destructivos rellenos (texto blanco AA en ambos temas). */
+  --color-danger-solid: #b23b32;
 
   /* Display redondeado y amable (SF Rounded donde exista); cuerpo de sistema.
      Sin descargas de fuentes externas: builds reproducibles y rápidos. */
@@ -29,6 +31,8 @@
   --color-surface: var(--surface);
   --color-muted: var(--muted);
   --color-line: var(--line);
+  /* Texto de error/peligro: oscuro sobre claro, claro sobre oscuro (AA en ambos). */
+  --color-danger: var(--danger);
 }
 
 :root {
@@ -37,6 +41,7 @@
   --surface: #fffdf7;
   --muted: #57726c;
   --line: #e8dcc4;
+  --danger: #b23b32;
 }
 
 .dark {
@@ -45,6 +50,7 @@
   --surface: #15302c;
   --muted: #9fbab2;
   --line: #25443f;
+  --danger: #f3a39b;
 }
 
 body {
