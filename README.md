@@ -48,7 +48,7 @@ Desarrollo incremental; cada incremento es funcional y verificable.
 | 5 | Registro/login/perfil conectados (enlace de pago opcional) | ✅ |
 | 6 | DIVIDE: wizard completo con cálculo en cliente | ✅ |
 | 7 | ai-service (FastAPI) + cascada Gemini + OCR de tickets | ✅ |
-| 8 | DECIDE: ruleta, cartas, toque simultáneo | ⏳ |
+| 8 | DECIDE: ruleta, cartas, toque simultáneo | ✅ |
 | 9 | DECIDE: quiz de grupo + trivia con IA + modo offline | ⏳ |
 | 10 | PLAN: geolocalización + Places (caché Redis) + plan IA | ⏳ |
 | 11 | OAuth con Google | ⏳ |
@@ -138,7 +138,8 @@ Next.js 15 (App Router) + TypeScript + Tailwind CSS 4, con Framer Motion para an
 - **PWA**: manifest con iconos (incluye maskable) y service worker propio con caché de estáticos y página offline. El modo offline completo de los quizzes de DECIDE llega en su incremento.
 - **Navegación**: header con navegación en escritorio y barra de pestañas inferior estilo app en móvil (mobile-first).
 - **Divide** (módulo completo): wizard de 4 pasos (personas → cuenta → reparto → resultado) con entrada manual de ítems y los cuatro modos de reparto (partes iguales, por ítems, porcentajes que suman 100 % y extra fijo). Todo el cálculo ocurre en el dispositivo y **no se persiste nada**; el resultado se comparte con la Web Share API (o se copia al portapapeles). Si has iniciado sesión y tienes enlace de pago, se incluye en el mensaje.
-- **Decide** y **Plan** son por ahora páginas de avance navegables; se implementan en sus incrementos.
+- **Decide** (en curso): hub de juegos para decidir en grupo. Ya disponibles: **ruleta** con giro físico y confeti, **cartas** (voltear hasta dar con la marcada) y **toque simultáneo** con Pointer Events multitáctil. Los quizzes ("¿Quién de aquí…?" y trivia con IA) llegan en el siguiente incremento.
+- **Plan** es por ahora una página de avance navegable; se implementa en su incremento.
 - **Cuenta de usuario**: registro, inicio de sesión y página de cuenta (`/login`, `/register`, `/account`) conectados a la API. El perfil permite editar el nombre y un enlace de pago propio opcional (solo `https://`), y dar de baja la cuenta. La cabecera muestra **Entrar** o **Mi cuenta** según el estado de sesión.
 
 Para desarrollo con hot reload:
@@ -200,6 +201,12 @@ brindi/
 - **Reparto justo con método del mayor resto**: una única función (`allocateProportional`) reparte cualquier total por pesos garantizando que la suma de las partes es exactamente el total; los céntimos sobrantes van a quienes tienen mayor parte fraccionaria. Los cuatro modos se reducen a esa función. Lógica pura y testeable (validada con 27 casos de cálculo y 17 del reducer).
 - **Moneda EUR por ahora**: el mercado principal es España; una moneda configurable es una mejora futura sin impacto en el motor de cálculo.
 - **Compartir con Web Share API y respaldo a portapapeles**: en móvil abre la hoja de compartir nativa; en escritorio sin soporte, copia el mensaje y avisa.
+
+### Módulo Decide
+- **Lógica de azar pura e inyectable**: `pickIndex` y `shuffle` (Fisher–Yates) aceptan un generador `rng` para ser deterministas en test; el reparto de cada juego se reduce a estas funciones (validadas con casos límite).
+- **Ruleta por deceleración (ease-out) en lugar de bucle de física**: una función pura calcula la rotación destino para que el segmento elegido (al azar) quede bajo la aguja tras varias vueltas, y la rueda se anima con una transición CSS de salida suave; bajo `prefers-reduced-motion` salta al instante. Más simple y robusto que un bucle de `requestAnimationFrame`, y testeable (la rotación destino siempre aterriza en el segmento correcto).
+- **Toque simultáneo con Pointer Events**: un único conjunto de manejadores cubre ratón y multitáctil; el área usa `touch-action: none` para evitar el scroll, y una cuenta atrás que se reinicia al cambiar el número de dedos elige uno y vibra (`navigator.vibrate`) si está disponible.
+- **Subrutas por juego con navegación consciente**: cada juego es su propia ruta (`/decide/roulette`, `/decide/cards`, `/decide/touch`); la pestaña activa de la barra inferior se calcula incluyendo subrutas, así Decide sigue resaltado dentro de un juego.
 
 ### ai-service
 - **Servicio de IA separado en FastAPI**: aísla el SDK de Gemini y la lógica de IA del backend de NestJS; cada uno usa la herramienta más adecuada y se despliega/escala por separado. La API de NestJS actuará de pasarela (el navegador nunca habla con el ai-service).
