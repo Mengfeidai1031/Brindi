@@ -1,0 +1,5 @@
+# Dependencias solo para tests (no van en la imagen)
+-r requirements.txt
+pytest>=8.3,<9.0
+pytest-asyncio>=0.25,<1.0
+httpx>=0.28,<1.0

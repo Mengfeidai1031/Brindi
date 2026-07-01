@@ -71,9 +71,12 @@ fi
 # Claves que pueden faltar en .env creados con versiones anteriores.
 ensure_env_line DATABASE_URL
 ensure_env_line JWT_REFRESH_SECRET
+ensure_env_line INTERNAL_API_KEY
+# GEMINI_API_KEY no se autogenera: la proporciona la persona. Solo garantizamos que la línea exista.
+grep -q "^GEMINI_API_KEY=" "$ENV_FILE" || printf 'GEMINI_API_KEY=\n' >> "$ENV_FILE"
 
 # Genera cualquier secreto que siga con el placeholder.
-for key in JWT_SECRET JWT_REFRESH_SECRET POSTGRES_PASSWORD; do
+for key in JWT_SECRET JWT_REFRESH_SECRET INTERNAL_API_KEY POSTGRES_PASSWORD; do
   if grep -q "^${key}=${PLACEHOLDER}$" "$ENV_FILE"; then
     set_env_value "$key" "$(gen_secret)"
     ok "Secreto ${key} generado automáticamente"
@@ -120,6 +123,7 @@ wait_healthy brindi-redis 40
 # El primer arranque de la API incluye migraciones + seed.
 wait_healthy brindi-api 90
 wait_healthy brindi-web 90
+wait_healthy brindi-ai-service 90
 
 # ---------- 5. Verificación del seed ----------
 QUESTION_COUNT="$(compose exec -T postgres psql -U "${POSTGRES_USER:-brindi}" -d "${POSTGRES_DB:-brindi}" -tAc 'SELECT count(*) FROM quiz_fallback_questions;' 2>/dev/null | tr -d '[:space:]' || true)"
@@ -138,6 +142,10 @@ info "API docs   : http://localhost:${API_PORT:-4000}/api/docs"
 info "Healthcheck: http://localhost:${API_PORT:-4000}/health"
 info "PostgreSQL : localhost:${POSTGRES_PORT:-5432} (db: ${POSTGRES_DB:-brindi}, user: ${POSTGRES_USER:-brindi})"
 info "Redis      : localhost:${REDIS_PORT:-6379}"
+info "IA         : ai-service (interno, sin puerto público)"
+if ! grep -q "^GEMINI_API_KEY=." "$ENV_FILE"; then
+  warn "GEMINI_API_KEY no está definida en .env: el OCR de tickets no funcionará hasta que la añadas."
+fi
 echo
 warn "Las claves de Google (Gemini, OAuth, Places) en .env siguen vacías;"
 warn "se necesitarán cuando lleguen los módulos de IA y mapas. Tras rellenarlas:"
