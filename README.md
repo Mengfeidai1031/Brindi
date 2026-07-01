@@ -47,7 +47,7 @@ Desarrollo incremental; cada incremento es funcional y verificable.
 | 4 | Frontend Next.js 15 + Tailwind 4 + i18n + PWA + branding | ✅ |
 | 5 | Registro/login/perfil conectados (enlace de pago opcional) | ✅ |
 | 6 | DIVIDE: wizard completo con cálculo en cliente | ✅ |
-| 7 | ai-service (FastAPI) + cascada Gemini + OCR de tickets | ⏳ |
+| 7 | ai-service (FastAPI) + cascada Gemini + OCR de tickets | ✅ |
 | 8 | DECIDE: ruleta, cartas, toque simultáneo | ⏳ |
 | 9 | DECIDE: quiz de grupo + trivia con IA + modo offline | ⏳ |
 | 10 | PLAN: geolocalización + Places (caché Redis) + plan IA | ⏳ |
@@ -103,6 +103,32 @@ npm run start:dev   # lee DATABASE_URL del .env de la raíz (generada por setup-
 
 Comandos útiles desde `apps/api`: `npm run prisma:migrate:dev` (nueva migración), `npm run prisma:seed` (recargar preguntas de fallback).
 
+## ai-service (apps/ai-service)
+
+Servicio interno en **FastAPI** que encapsula las llamadas a **Google Gemini**. No se publica ningún puerto al host: solo es accesible dentro de la red de Docker y exige un secreto compartido (`INTERNAL_API_KEY`) en la cabecera `X-Internal-Key`, de modo que únicamente la API de NestJS puede invocarlo. Escribe el consumo en la tabla `ai_usage` de la misma base de datos (no persiste imágenes ni contenido).
+
+Endpoints (documentados en OpenAPI, accesibles vía la API o `docker exec`):
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/health` | Estado del servicio, base de datos y si hay clave de Gemini (público) |
+| POST | `/ocr-receipt` | Recibe una imagen de ticket y devuelve ítems con importes en céntimos (interno) |
+| GET | `/usage` | Resumen de consumo de IA por servicio (interno) |
+
+El **OCR** usa una cascada de modelos (`gemini-2.5-flash` → `gemini-2.0-flash` → `gemini-2.5-pro`): se prueban en orden y se usa el primero que responde con un JSON válido. El servicio arranca aunque falte `GEMINI_API_KEY` (el OCR responde 502 hasta que se defina), para no bloquear el resto del stack.
+
+Próximos incrementos añadirán los endpoints `/generate-quiz` y `/generate-plan`, y conectarán el OCR al paso 2 del wizard de Divide a través de la API.
+
+Para desarrollo sin Docker:
+
+```bash
+cd apps/ai-service
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
+DATABASE_URL=... INTERNAL_API_KEY=... GEMINI_API_KEY=... uvicorn app.main:app --reload --port 5000
+pytest        # suite de tests (28 casos; los de BD se omiten sin TEST_DATABASE_URL)
+```
+
 ## Frontend (apps/web)
 
 Next.js 15 (App Router) + TypeScript + Tailwind CSS 4, con Framer Motion para animaciones y Lucide para iconografía (nunca emojis en la UI). Disponible en `http://localhost:3000` tras el `setup-local.sh`.
@@ -129,7 +155,8 @@ npm run dev   # http://localhost:3000
 brindi/
 ├── apps/
 │   ├── api/               # Backend NestJS + Prisma (health, Swagger, migraciones, seed)
-│   └── web/               # Frontend Next.js 15 (PWA, i18n ES/EN, Tailwind 4)
+│   ├── web/               # Frontend Next.js 15 (PWA, i18n ES/EN, Tailwind 4)
+│   └── ai-service/        # Servicio FastAPI (cascada Gemini: OCR de tickets)
 ├── packages/              # (próximos incrementos) shared-types
 ├── assets/branding/       # logo e icono oficiales
 ├── infra/                 # docker-compose.yml (+ nginx y prod más adelante)
@@ -173,6 +200,13 @@ brindi/
 - **Reparto justo con método del mayor resto**: una única función (`allocateProportional`) reparte cualquier total por pesos garantizando que la suma de las partes es exactamente el total; los céntimos sobrantes van a quienes tienen mayor parte fraccionaria. Los cuatro modos se reducen a esa función. Lógica pura y testeable (validada con 27 casos de cálculo y 17 del reducer).
 - **Moneda EUR por ahora**: el mercado principal es España; una moneda configurable es una mejora futura sin impacto en el motor de cálculo.
 - **Compartir con Web Share API y respaldo a portapapeles**: en móvil abre la hoja de compartir nativa; en escritorio sin soporte, copia el mensaje y avisa.
+
+### ai-service
+- **Servicio de IA separado en FastAPI**: aísla el SDK de Gemini y la lógica de IA del backend de NestJS; cada uno usa la herramienta más adecuada y se despliega/escala por separado. La API de NestJS actuará de pasarela (el navegador nunca habla con el ai-service).
+- **Interno por diseño + secreto compartido**: el servicio no expone puertos al host y valida `X-Internal-Key` en tiempo constante; solo la API puede llamarlo.
+- **Cascada de modelos con salida estructurada**: una sola función recorre los modelos en orden y valida el JSON con Pydantic (`response_schema`); un fallo de red o de parseo pasa al siguiente modelo. Lógica pura y testeable sin red (probada con cliente simulado).
+- **Telemetría que nunca rompe la petición**: el registro en `ai_usage` se hace de forma defensiva; si falla, se anota un aviso pero el OCR responde igual.
+- **Arranca sin clave de Gemini**: si falta `GEMINI_API_KEY`, el stack sube igualmente y el OCR responde 502, en vez de impedir el `setup-local.sh`.
 
 ## Licencia
 

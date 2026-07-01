@@ -1,0 +1,14 @@
+[project]
+name = "brindi-ai-service"
+version = "0.7.0"
+description = "Brindi ai-service - cascada Gemini para OCR de tickets, quiz y planes"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
