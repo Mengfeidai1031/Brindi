@@ -1,6 +1,6 @@
 {
   "name": "@brindi/web",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Brindi web - frontend Next.js (PWA)",
   "private": true,
   "license": "MIT",

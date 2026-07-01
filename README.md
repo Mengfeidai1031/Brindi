@@ -46,7 +46,7 @@ Desarrollo incremental; cada incremento es funcional y verificable.
 | 3 | Autenticación email+password (JWT + refresh, rate limiting) | ✅ |
 | 4 | Frontend Next.js 15 + Tailwind 4 + i18n + PWA + branding | ✅ |
 | 5 | Registro/login/perfil conectados (enlace de pago opcional) | ✅ |
-| 6 | DIVIDE: wizard completo con cálculo en cliente | ⏳ |
+| 6 | DIVIDE: wizard completo con cálculo en cliente | ✅ |
 | 7 | ai-service (FastAPI) + cascada Gemini + OCR de tickets | ⏳ |
 | 8 | DECIDE: ruleta, cartas, toque simultáneo | ⏳ |
 | 9 | DECIDE: quiz de grupo + trivia con IA + modo offline | ⏳ |
@@ -111,7 +111,8 @@ Next.js 15 (App Router) + TypeScript + Tailwind CSS 4, con Framer Motion para an
 - **Tema claro/oscuro**: conmutable y siguiendo el sistema por defecto, con tokens de color auditables para contraste.
 - **PWA**: manifest con iconos (incluye maskable) y service worker propio con caché de estáticos y página offline. El modo offline completo de los quizzes de DECIDE llega en su incremento.
 - **Navegación**: header con navegación en escritorio y barra de pestañas inferior estilo app en móvil (mobile-first).
-- Los tres módulos (Divide, Decide, Plan) son por ahora páginas de avance navegables; se implementan en sus incrementos.
+- **Divide** (módulo completo): wizard de 4 pasos (personas → cuenta → reparto → resultado) con entrada manual de ítems y los cuatro modos de reparto (partes iguales, por ítems, porcentajes que suman 100 % y extra fijo). Todo el cálculo ocurre en el dispositivo y **no se persiste nada**; el resultado se comparte con la Web Share API (o se copia al portapapeles). Si has iniciado sesión y tienes enlace de pago, se incluye en el mensaje.
+- **Decide** y **Plan** son por ahora páginas de avance navegables; se implementan en sus incrementos.
 - **Cuenta de usuario**: registro, inicio de sesión y página de cuenta (`/login`, `/register`, `/account`) conectados a la API. El perfil permite editar el nombre y un enlace de pago propio opcional (solo `https://`), y dar de baja la cuenta. La cabecera muestra **Entrar** o **Mi cuenta** según el estado de sesión.
 
 Para desarrollo con hot reload:
@@ -165,6 +166,13 @@ brindi/
 - **Refresco transparente ante 401**: el cliente de API reintenta una vez tras refrescar el token, con _single-flight_ (varias peticiones que caduquen a la vez comparten un único refresco). Si el refresco falla, se limpia la sesión y se redirige a `/login`.
 - **Mensajes de error localizados por código de estado**: la validación de formularios ocurre en cliente y los errores del servidor (409 email duplicado, 401 credenciales) se traducen en el frontend según el código HTTP, en lugar de mostrar el texto en español de la API a usuarios en inglés.
 - **Color sin ser el único canal**: los estados de éxito/error combinan color con icono y texto; se añadió un token de "peligro" que se adapta a claro/oscuro para cumplir contraste AA en ambos temas, y los botones primarios usan el teal profundo para garantizar 4.5:1 sobre texto blanco.
+
+### Módulo Divide
+- **Cálculo 100 % en cliente y sin persistencia**: el estado del wizard vive solo en memoria (un `useReducer` con contexto); no se usa `localStorage` ni se envía nada a la API. Recargar la página reinicia el reparto, que es justo el comportamiento correcto por privacidad.
+- **Dinero en céntimos (enteros)**: los importes se parsean a céntimos para evitar errores de coma flotante. El parser es tolerante con separadores (`12,50` y `12.50`, con miles), y el formato de salida usa `Intl.NumberFormat` por idioma.
+- **Reparto justo con método del mayor resto**: una única función (`allocateProportional`) reparte cualquier total por pesos garantizando que la suma de las partes es exactamente el total; los céntimos sobrantes van a quienes tienen mayor parte fraccionaria. Los cuatro modos se reducen a esa función. Lógica pura y testeable (validada con 27 casos de cálculo y 17 del reducer).
+- **Moneda EUR por ahora**: el mercado principal es España; una moneda configurable es una mejora futura sin impacto en el motor de cálculo.
+- **Compartir con Web Share API y respaldo a portapapeles**: en móvil abre la hoja de compartir nativa; en escritorio sin soporte, copia el mensaje y avisa.
 
 ## Licencia
 
