@@ -130,6 +130,94 @@
   "divide": {
     "name": "Divide",
     "lead": "La calculadora de cuentas para grupos: del ticket al \"quién paga a quién\" sin discusiones.",
+    "nav": {
+      "back": "Atrás",
+      "next": "Siguiente",
+      "seeResult": "Ver resultado"
+    },
+    "steps": {
+      "progress": "Paso {current} de {total}",
+      "people": {
+        "title": "Personas",
+        "heading": "¿Quién participa?",
+        "description": "Añade a todas las personas que comparten la cuenta.",
+        "placeholder": "Persona {number}",
+        "add": "Añadir persona",
+        "remove": "Eliminar persona {number}"
+      },
+      "bill": {
+        "title": "La cuenta",
+        "heading": "Apunta la cuenta",
+        "description": "Añade cada cosa con su precio, o solo el total como una línea.",
+        "itemLabel": "Descripción del ítem {number}",
+        "itemPlaceholder": "Ítem {number}",
+        "itemFallback": "Ítem {number}",
+        "amountLabel": "Importe del ítem {number}",
+        "amountPlaceholder": "0,00",
+        "add": "Añadir ítem",
+        "remove": "Eliminar ítem {number}",
+        "total": "Total",
+        "hint": "Los importes solo se calculan en tu dispositivo. No se guarda nada.",
+        "person": "Persona"
+      },
+      "split": {
+        "title": "Reparto",
+        "heading": "¿Cómo se reparte?",
+        "description": "Elige el modo de reparto.",
+        "modes": {
+          "equal": {
+            "name": "Partes iguales",
+            "desc": "El total dividido entre todos por igual."
+          },
+          "items": {
+            "name": "Por ítems",
+            "desc": "Cada uno paga lo que ha consumido."
+          },
+          "percentage": {
+            "name": "Porcentajes",
+            "desc": "Asigna un % a cada persona (suma 100)."
+          },
+          "extra": {
+            "name": "Extra fijo",
+            "desc": "Alguien paga un extra; el resto, a partes iguales."
+          }
+        },
+        "equal": {
+          "title": "A partes iguales",
+          "preview": "Cada persona paga {amount} · {count} personas"
+        },
+        "items": {
+          "title": "Asigna cada ítem",
+          "description": "Toca a quién corresponde cada ítem. Si lo comparten varios, se divide entre ellos.",
+          "unassigned": "Asigna este ítem a alguien."
+        },
+        "percentage": {
+          "title": "Porcentaje por persona",
+          "inputLabel": "Porcentaje de {name}",
+          "even": "Repartir equitativamente",
+          "sum": "Suma: {sum}%"
+        },
+        "extra": {
+          "title": "Extra por persona",
+          "description": "Indica el extra de quien corresponda. El resto se reparte a partes iguales.",
+          "inputLabel": "Extra de {name}",
+          "remaining": "Resto a partes iguales: {amount}",
+          "over": "Los extras superan el total."
+        }
+      },
+      "result": {
+        "title": "Resultado",
+        "heading": "Esto paga cada uno",
+        "description": "Reparto calculado en tu dispositivo.",
+        "shareTitle": "Brindi · Cuenta dividida",
+        "payLabel": "Págame en",
+        "payIncluded": "Tu enlace de pago se incluye al compartir.",
+        "share": "Compartir",
+        "copied": "Copiado",
+        "restart": "Empezar de nuevo",
+        "privacy": "Nada de esto se ha guardado."
+      }
+    },
     "features": {
       "ocr": {
         "title": "Foto del ticket",

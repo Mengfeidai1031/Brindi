@@ -130,6 +130,94 @@
   "divide": {
     "name": "Divide",
     "lead": "The bill calculator for groups: from the receipt to \"who pays whom\" without arguments.",
+    "nav": {
+      "back": "Back",
+      "next": "Next",
+      "seeResult": "See result"
+    },
+    "steps": {
+      "progress": "Step {current} of {total}",
+      "people": {
+        "title": "People",
+        "heading": "Who's in?",
+        "description": "Add everyone sharing the bill.",
+        "placeholder": "Person {number}",
+        "add": "Add person",
+        "remove": "Remove person {number}"
+      },
+      "bill": {
+        "title": "The bill",
+        "heading": "Enter the bill",
+        "description": "Add each item with its price, or just the total as one line.",
+        "itemLabel": "Item {number} description",
+        "itemPlaceholder": "Item {number}",
+        "itemFallback": "Item {number}",
+        "amountLabel": "Item {number} amount",
+        "amountPlaceholder": "0.00",
+        "add": "Add item",
+        "remove": "Remove item {number}",
+        "total": "Total",
+        "hint": "Amounts are computed on your device only. Nothing is stored.",
+        "person": "Person"
+      },
+      "split": {
+        "title": "Split",
+        "heading": "How to split?",
+        "description": "Choose the split mode.",
+        "modes": {
+          "equal": {
+            "name": "Equal parts",
+            "desc": "The total divided equally among everyone."
+          },
+          "items": {
+            "name": "By items",
+            "desc": "Everyone pays for what they had."
+          },
+          "percentage": {
+            "name": "Percentages",
+            "desc": "Assign a % to each person (sums to 100)."
+          },
+          "extra": {
+            "name": "Fixed extra",
+            "desc": "Someone pays an extra; the rest, equally."
+          }
+        },
+        "equal": {
+          "title": "Equal parts",
+          "preview": "Each person pays {amount} · {count} people"
+        },
+        "items": {
+          "title": "Assign each item",
+          "description": "Tap who each item belongs to. If several share it, it's split between them.",
+          "unassigned": "Assign this item to someone."
+        },
+        "percentage": {
+          "title": "Percentage per person",
+          "inputLabel": "{name}'s percentage",
+          "even": "Split evenly",
+          "sum": "Sum: {sum}%"
+        },
+        "extra": {
+          "title": "Extra per person",
+          "description": "Enter the extra for whoever applies. The rest is split equally.",
+          "inputLabel": "{name}'s extra",
+          "remaining": "Rest split equally: {amount}",
+          "over": "Extras exceed the total."
+        }
+      },
+      "result": {
+        "title": "Result",
+        "heading": "Here's what each pays",
+        "description": "Split computed on your device.",
+        "shareTitle": "Brindi · Bill split",
+        "payLabel": "Pay me at",
+        "payIncluded": "Your payment link is included when sharing.",
+        "share": "Share",
+        "copied": "Copied",
+        "restart": "Start over",
+        "privacy": "None of this was saved."
+      }
+    },
     "features": {
       "ocr": {
         "title": "Receipt photo",
