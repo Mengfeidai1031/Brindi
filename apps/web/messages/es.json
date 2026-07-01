@@ -1,0 +1,347 @@
+{
+  "meta": {
+    "description": "Divide la cuenta con una foto del ticket, decide con juegos de grupo y deja que la IA os proponga el plan. Gratis y con privacidad por diseño."
+  },
+  "common": {
+    "appName": "Brindi",
+    "skipToContent": "Saltar al contenido"
+  },
+  "nav": {
+    "home": "Inicio",
+    "divide": "Divide",
+    "decide": "Decide",
+    "plan": "Plan",
+    "main": "Navegación principal",
+    "tabs": "Navegación inferior"
+  },
+  "locale": {
+    "label": "Idioma",
+    "es": "Español",
+    "en": "Inglés"
+  },
+  "theme": {
+    "toDark": "Activar modo oscuro",
+    "toLight": "Activar modo claro"
+  },
+  "auth": {
+    "nav": {
+      "login": "Entrar",
+      "account": "Mi cuenta"
+    },
+    "login": {
+      "title": "Bienvenido de nuevo",
+      "subtitle": "Entra para gestionar tu cuenta y tu enlace de pago.",
+      "submit": "Entrar",
+      "submitting": "Entrando…",
+      "noAccount": "¿Aún no tienes cuenta?",
+      "switchToRegister": "Crear cuenta"
+    },
+    "register": {
+      "title": "Crea tu cuenta",
+      "subtitle": "Regístrate para guardar tu perfil. Nada de tickets, importes ni ubicaciones.",
+      "submit": "Crear cuenta",
+      "submitting": "Creando…",
+      "hasAccount": "¿Ya tienes cuenta?",
+      "switchToLogin": "Entrar"
+    },
+    "fields": {
+      "name": "Nombre",
+      "namePlaceholder": "Tu nombre",
+      "email": "Email",
+      "emailPlaceholder": "tu@email.com",
+      "password": "Contraseña",
+      "passwordHint": "Mínimo 8 caracteres."
+    },
+    "errors": {
+      "emailInvalid": "Introduce un email válido.",
+      "passwordShort": "La contraseña debe tener al menos 8 caracteres.",
+      "nameRequired": "El nombre es obligatorio.",
+      "emailTaken": "Ese email ya está registrado. ¿Quieres entrar?",
+      "invalidCredentials": "Email o contraseña incorrectos.",
+      "generic": "Algo ha ido mal. Inténtalo de nuevo."
+    }
+  },
+  "account": {
+    "title": "Mi cuenta",
+    "subtitle": "Gestiona tu perfil y tu sesión.",
+    "loading": "Cargando tu cuenta…",
+    "session": {
+      "title": "Sesión",
+      "email": "Email",
+      "memberSince": "Miembro desde",
+      "logout": "Cerrar sesión"
+    },
+    "profile": {
+      "title": "Perfil",
+      "name": "Nombre",
+      "paymentLink": "Enlace de pago (opcional)",
+      "paymentLinkHint": "Tu enlace propio para cobrar (PayPal.me, Bizum, etc.). Debe empezar por https://",
+      "paymentLinkPlaceholder": "https://paypal.me/tunombre",
+      "nameRequired": "El nombre no puede estar vacío.",
+      "paymentLinkInvalid": "El enlace debe ser una URL que empiece por https://",
+      "save": "Guardar cambios",
+      "saving": "Guardando…",
+      "saved": "Guardado",
+      "saveError": "No se pudo guardar. Inténtalo de nuevo."
+    },
+    "danger": {
+      "title": "Eliminar cuenta",
+      "description": "Tu cuenta se desactivará y dejarás de poder iniciar sesión. Esta acción no se puede deshacer.",
+      "delete": "Eliminar mi cuenta",
+      "confirmText": "¿Seguro que quieres eliminar tu cuenta? No podrás recuperarla.",
+      "confirm": "Sí, eliminar",
+      "cancel": "Cancelar",
+      "deleting": "Eliminando…"
+    }
+  },
+  "home": {
+    "kicker": "La app para cuando quedáis",
+    "tagline": {
+      "divide": "Divide.",
+      "decide": "Decide.",
+      "plan": "Plan."
+    },
+    "subtitle": "Reparte la cuenta en segundos, decide quién paga con juegos y deja que la IA os monte el plan con sitios reales cerca de vosotros.",
+    "modulesHeading": "Tres módulos, una quedada redonda",
+    "open": "Abrir módulo",
+    "modules": {
+      "divide": {
+        "name": "Divide",
+        "description": "Foto del ticket o entrada manual, cuatro modos de reparto y un mensaje listo para compartir con quién paga a quién."
+      },
+      "decide": {
+        "name": "Decide",
+        "description": "Ruleta, cartas, toque simultáneo y quizzes con IA. Que la suerte (o el saber) decida por vosotros."
+      },
+      "plan": {
+        "name": "Plan",
+        "description": "Decid dónde estáis, cuántos sois y cuánto tiempo tenéis: la IA os propone un plan con lugares reales."
+      }
+    },
+    "privacy": {
+      "title": "Tu privacidad, primero",
+      "text": "No guardamos tickets, importes, ubicaciones ni resultados de juegos. Todo se calcula en tu dispositivo y se descarta al terminar."
+    }
+  },
+  "modulePages": {
+    "badge": "En construcción",
+    "intro": "Este módulo llega en un próximo incremento. Esto es lo que incluirá:"
+  },
+  "divide": {
+    "name": "Divide",
+    "lead": "La calculadora de cuentas para grupos: del ticket al \"quién paga a quién\" sin discusiones.",
+    "nav": {
+      "back": "Atrás",
+      "next": "Siguiente",
+      "seeResult": "Ver resultado"
+    },
+    "steps": {
+      "progress": "Paso {current} de {total}",
+      "people": {
+        "title": "Personas",
+        "heading": "¿Quién participa?",
+        "description": "Añade a todas las personas que comparten la cuenta.",
+        "placeholder": "Persona {number}",
+        "add": "Añadir persona",
+        "remove": "Eliminar persona {number}"
+      },
+      "bill": {
+        "title": "La cuenta",
+        "heading": "Apunta la cuenta",
+        "description": "Añade cada cosa con su precio, o solo el total como una línea.",
+        "itemLabel": "Descripción del ítem {number}",
+        "itemPlaceholder": "Ítem {number}",
+        "itemFallback": "Ítem {number}",
+        "amountLabel": "Importe del ítem {number}",
+        "amountPlaceholder": "0,00",
+        "add": "Añadir ítem",
+        "remove": "Eliminar ítem {number}",
+        "total": "Total",
+        "hint": "Los importes solo se calculan en tu dispositivo. No se guarda nada.",
+        "person": "Persona"
+      },
+      "split": {
+        "title": "Reparto",
+        "heading": "¿Cómo se reparte?",
+        "description": "Elige el modo de reparto.",
+        "modes": {
+          "equal": {
+            "name": "Partes iguales",
+            "desc": "El total dividido entre todos por igual."
+          },
+          "items": {
+            "name": "Por ítems",
+            "desc": "Cada uno paga lo que ha consumido."
+          },
+          "percentage": {
+            "name": "Porcentajes",
+            "desc": "Asigna un % a cada persona (suma 100)."
+          },
+          "extra": {
+            "name": "Extra fijo",
+            "desc": "Alguien paga un extra; el resto, a partes iguales."
+          }
+        },
+        "equal": {
+          "title": "A partes iguales",
+          "preview": "Cada persona paga {amount} · {count} personas"
+        },
+        "items": {
+          "title": "Asigna cada ítem",
+          "description": "Toca a quién corresponde cada ítem. Si lo comparten varios, se divide entre ellos.",
+          "unassigned": "Asigna este ítem a alguien."
+        },
+        "percentage": {
+          "title": "Porcentaje por persona",
+          "inputLabel": "Porcentaje de {name}",
+          "even": "Repartir equitativamente",
+          "sum": "Suma: {sum}%"
+        },
+        "extra": {
+          "title": "Extra por persona",
+          "description": "Indica el extra de quien corresponda. El resto se reparte a partes iguales.",
+          "inputLabel": "Extra de {name}",
+          "remaining": "Resto a partes iguales: {amount}",
+          "over": "Los extras superan el total."
+        }
+      },
+      "result": {
+        "title": "Resultado",
+        "heading": "Esto paga cada uno",
+        "description": "Reparto calculado en tu dispositivo.",
+        "shareTitle": "Brindi · Cuenta dividida",
+        "payLabel": "Págame en",
+        "payIncluded": "Tu enlace de pago se incluye al compartir.",
+        "share": "Compartir",
+        "copied": "Copiado",
+        "restart": "Empezar de nuevo",
+        "privacy": "Nada de esto se ha guardado."
+      }
+    },
+    "features": {
+      "ocr": {
+        "title": "Foto del ticket",
+        "desc": "OCR con IA que extrae items, cantidades y totales en una tabla editable."
+      },
+      "manual": {
+        "title": "Entrada manual",
+        "desc": "Añade items y precios a mano en segundos, sin foto."
+      },
+      "modes": {
+        "title": "Cuatro modos de reparto",
+        "desc": "Partes iguales, por consumo, porcentajes personalizados o extra fijo para alguien."
+      },
+      "share": {
+        "title": "Resultado compartible",
+        "desc": "Mensaje formateado para WhatsApp con los importes y el enlace de pago de cada uno."
+      }
+    }
+  },
+  "decide": {
+    "name": "Decide",
+    "lead": "Juegos rápidos y visuales para decidir cualquier cosa en grupo, pensados para el móvil.",
+    "hub": {
+      "subtitle": "Elegid un juego y dejad que decida por vosotros."
+    },
+    "games": {
+      "roulette": {
+        "name": "Ruleta",
+        "tagline": "Gira y que la suerte elija."
+      },
+      "cards": {
+        "name": "Cartas",
+        "tagline": "Voltea hasta dar con la marcada."
+      },
+      "touch": {
+        "name": "Toque",
+        "tagline": "Un dedo cada uno; la pantalla elige."
+      }
+    },
+    "common": {
+      "back": "Volver a Decide"
+    },
+    "roulette": {
+      "heading": "Ruleta",
+      "description": "Añade opciones, gira y que decida la suerte.",
+      "wheelLabel": "Ruleta de opciones",
+      "optionsHeading": "Opciones",
+      "optionPlaceholder": "Opción {number}",
+      "optionFallback": "Opción {number}",
+      "addOption": "Añadir opción",
+      "removeOption": "Eliminar opción {number}",
+      "spin": "Girar",
+      "spinning": "Girando…",
+      "spinAgain": "Girar otra vez",
+      "result": "Ha salido:"
+    },
+    "cards": {
+      "heading": "Cartas",
+      "description": "Reparte y voltea hasta encontrar la carta marcada.",
+      "countLabel": "¿Cuántas cartas?",
+      "fewer": "Menos cartas",
+      "more": "Más cartas",
+      "deal": "Repartir",
+      "redeal": "Repartir de nuevo",
+      "flipHint": "Tocad por turnos para voltear una carta.",
+      "found": "¡Carta marcada!",
+      "blank": "Carta en blanco",
+      "cardLabel": "Carta {number}"
+    },
+    "touch": {
+      "heading": "Toque simultáneo",
+      "description": "Cada persona pone un dedo en la pantalla.",
+      "instructions": "Poned todos un dedo en la pantalla y esperad.",
+      "needMore": "Hacen falta al menos 2 dedos.",
+      "chosen": "¡Elegido!",
+      "reset": "Otra vez"
+    },
+    "features": {
+      "roulette": {
+        "title": "Ruleta",
+        "desc": "Gira con física realista y celebra al elegido con confeti."
+      },
+      "cards": {
+        "title": "Cartas",
+        "desc": "Cada uno voltea una carta del mazo; una está marcada."
+      },
+      "touch": {
+        "title": "Toque simultáneo",
+        "desc": "Todos ponen un dedo en la pantalla y la app elige uno tras la cuenta atrás."
+      },
+      "groupQuiz": {
+        "title": "¿Quién de aquí…?",
+        "desc": "Preguntas para votar entre vosotros y reíros con el resultado."
+      },
+      "trivia": {
+        "title": "Trivia con IA",
+        "desc": "Preguntas del tema y nivel que elijáis, de Fácil a Imposible. Funciona incluso sin conexión."
+      }
+    }
+  },
+  "plan": {
+    "name": "Plan",
+    "lead": "Un plan a medida con lugares reales de vuestra zona, generado por IA.",
+    "features": {
+      "location": {
+        "title": "Vuestra zona",
+        "desc": "Usa tu ubicación con permiso explícito o escribe una ciudad."
+      },
+      "prefs": {
+        "title": "A vuestra medida",
+        "desc": "Personas, tipo de plan, presupuesto y tiempo disponible."
+      },
+      "ai": {
+        "title": "Plan narrativo con IA",
+        "desc": "De una a tres paradas reales, con el porqué y el orden ideal."
+      },
+      "directions": {
+        "title": "Cómo llegar",
+        "desc": "Abre la ruta directamente en tu app de mapas favorita."
+      }
+    }
+  },
+  "footer": {
+    "privacy": "Privacidad por diseño: tus datos no se guardan.",
+    "rights": "Código abierto bajo licencia MIT."
+  }
+}
