@@ -255,6 +255,14 @@
       "touch": {
         "name": "Toque",
         "tagline": "Un dedo cada uno; la pantalla elige."
+      },
+      "group": {
+        "name": "¿Quién de aquí…?",
+        "tagline": "Preguntas para votar y reíros en grupo."
+      },
+      "trivia": {
+        "name": "Trivia",
+        "tagline": "Preguntas de cultura general con IA."
       }
     },
     "common": {
@@ -294,6 +302,51 @@
       "needMore": "Hacen falta al menos 2 dedos.",
       "chosen": "¡Elegido!",
       "reset": "Otra vez"
+    },
+    "trivia": {
+      "heading": "Trivia",
+      "description": "Preguntas de tipo test por categoría y dificultad.",
+      "categoryLabel": "Categoría",
+      "categories": {
+        "FUTBOL": "Fútbol",
+        "PELICULAS_SERIES": "Películas y series",
+        "MUSICA": "Música",
+        "GEOGRAFIA": "Geografía",
+        "HISTORIA": "Historia",
+        "CIENCIA": "Ciencia",
+        "RANDOM": "Variado"
+      },
+      "levelLabel": "Dificultad",
+      "levels": {
+        "FACIL": "Fácil",
+        "MEDIO": "Media",
+        "DIFICIL": "Difícil",
+        "IMPOSIBLE": "Imposible"
+      },
+      "countLabel": "Número de preguntas",
+      "start": "Empezar",
+      "loading": "Preparando preguntas…",
+      "loadError": "No se pudieron cargar preguntas. Inténtalo de nuevo.",
+      "offlineNote": "Sin conexión: preguntas de respaldo",
+      "fallbackNote": "Preguntas de respaldo",
+      "progress": "Pregunta {current} de {total}",
+      "scoreShort": "{score} aciertos",
+      "finalScore": "Tu puntuación",
+      "playAgain": "Jugar otra vez",
+      "seeScore": "Ver puntuación",
+      "next": "Siguiente"
+    },
+    "group": {
+      "heading": "¿Quién de aquí…?",
+      "description": "En cada pregunta, votad entre vosotros.",
+      "playersHeading": "Jugadores",
+      "playerPlaceholder": "Jugador {number}",
+      "addPlayer": "Añadir jugador",
+      "removePlayer": "Eliminar jugador {number}",
+      "player": "Jugador",
+      "start": "Empezar",
+      "nextPrompt": "Otra pregunta",
+      "decideRandom": "Que decida Brindi"
     },
     "features": {
       "roulette": {

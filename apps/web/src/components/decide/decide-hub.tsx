@@ -1,4 +1,4 @@
-import { ArrowRight, Disc3, Hand, Layers, type LucideIcon } from 'lucide-react';
+import { ArrowRight, Brain, Disc3, Hand, Layers, Users, type LucideIcon } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 
@@ -6,6 +6,8 @@ const GAMES: { key: string; href: string; Icon: LucideIcon }[] = [
   { key: 'roulette', href: '/decide/roulette', Icon: Disc3 },
   { key: 'cards', href: '/decide/cards', Icon: Layers },
   { key: 'touch', href: '/decide/touch', Icon: Hand },
+  { key: 'group', href: '/decide/group', Icon: Users },
+  { key: 'trivia', href: '/decide/trivia', Icon: Brain },
 ];
 
 export async function DecideHub() {

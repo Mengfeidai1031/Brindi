@@ -49,7 +49,7 @@ Desarrollo incremental; cada incremento es funcional y verificable.
 | 6 | DIVIDE: wizard completo con cálculo en cliente | ✅ |
 | 7 | ai-service (FastAPI) + cascada Gemini + OCR de tickets | ✅ |
 | 8 | DECIDE: ruleta, cartas, toque simultáneo | ✅ |
-| 9 | DECIDE: quiz de grupo + trivia con IA + modo offline | ⏳ |
+| 9 | DECIDE: quiz de grupo + trivia con IA + modo offline | ✅ |
 | 10 | PLAN: geolocalización + Places (caché Redis) + plan IA | ⏳ |
 | 11 | OAuth con Google | ⏳ |
 | 12 | Nginx + compose de producción + SECURITY.md (OWASP) | ⏳ |
@@ -90,6 +90,7 @@ La API arranca dentro de Docker con `setup-local.sh`; en cada arranque el conten
 | GET | `/users/me` | Perfil del usuario autenticado (Bearer) |
 | PATCH | `/users/me` | Actualiza nombre, idioma o enlace de pago propio |
 | DELETE | `/users/me` | Baja lógica de la cuenta (`deleted_at`) |
+| POST | `/quiz` | Genera preguntas de trivia (proxy al ai-service; público) — 20 req/min |
 
 El access token (15 min) viaja como `Authorization: Bearer`; el refresh token (7 días) vive en una cookie `httpOnly` con `SameSite=Strict` y `path=/auth`, y se rota en cada refresco.
 
@@ -113,11 +114,12 @@ Endpoints (documentados en OpenAPI, accesibles vía la API o `docker exec`):
 |--------|------|-------------|
 | GET | `/health` | Estado del servicio, base de datos y si hay clave de Gemini (público) |
 | POST | `/ocr-receipt` | Recibe una imagen de ticket y devuelve ítems con importes en céntimos (interno) |
+| POST | `/generate-quiz` | Genera preguntas de trivia con Gemini; si no hay clave o falla, recurre al banco local (interno) |
 | GET | `/usage` | Resumen de consumo de IA por servicio (interno) |
 
-El **OCR** usa una cascada de modelos (`gemini-2.5-flash` → `gemini-2.0-flash` → `gemini-2.5-pro`): se prueban en orden y se usa el primero que responde con un JSON válido. El servicio arranca aunque falte `GEMINI_API_KEY` (el OCR responde 502 hasta que se defina), para no bloquear el resto del stack.
+El **OCR** usa una cascada de modelos (`gemini-2.5-flash` → `gemini-2.0-flash` → `gemini-2.5-pro`): se prueban en orden y se usa el primero que responde con un JSON válido. La **generación de quiz** usa la misma estrategia de cascada y valida el JSON (exactamente 4 opciones e índice correcto en rango) antes de aceptarlo; si Gemini no está disponible o no devuelve preguntas válidas, recurre al banco `quiz_fallback_questions`. El servicio arranca aunque falte `GEMINI_API_KEY` (el OCR responde 502 y la trivia cae al banco local), para no bloquear el resto del stack.
 
-Próximos incrementos añadirán los endpoints `/generate-quiz` y `/generate-plan`, y conectarán el OCR al paso 2 del wizard de Divide a través de la API.
+Un próximo incremento añadirá `/generate-plan` y conectará el OCR al paso 2 del wizard de Divide a través de la API.
 
 Para desarrollo sin Docker:
 
@@ -126,7 +128,7 @@ cd apps/ai-service
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
 DATABASE_URL=... INTERNAL_API_KEY=... GEMINI_API_KEY=... uvicorn app.main:app --reload --port 5000
-pytest        # suite de tests (28 casos; los de BD se omiten sin TEST_DATABASE_URL)
+pytest        # suite de tests (44 casos; los de BD se omiten sin TEST_DATABASE_URL)
 ```
 
 ## Frontend (apps/web)
@@ -138,7 +140,7 @@ Next.js 15 (App Router) + TypeScript + Tailwind CSS 4, con Framer Motion para an
 - **PWA**: manifest con iconos (incluye maskable) y service worker propio con caché de estáticos y página offline. El modo offline completo de los quizzes de DECIDE llega en su incremento.
 - **Navegación**: header con navegación en escritorio y barra de pestañas inferior estilo app en móvil (mobile-first).
 - **Divide** (módulo completo): wizard de 4 pasos (personas → cuenta → reparto → resultado) con entrada manual de ítems y los cuatro modos de reparto (partes iguales, por ítems, porcentajes que suman 100 % y extra fijo). Todo el cálculo ocurre en el dispositivo y **no se persiste nada**; el resultado se comparte con la Web Share API (o se copia al portapapeles). Si has iniciado sesión y tienes enlace de pago, se incluye en el mensaje.
-- **Decide** (en curso): hub de juegos para decidir en grupo. Ya disponibles: **ruleta** con giro físico y confeti, **cartas** (voltear hasta dar con la marcada) y **toque simultáneo** con Pointer Events multitáctil. Los quizzes ("¿Quién de aquí…?" y trivia con IA) llegan en el siguiente incremento.
+- **Decide**: hub con cinco juegos para decidir y jugar en grupo. **Ruleta** con giro físico y confeti, **cartas** (voltear hasta dar con la marcada), **toque simultáneo** con Pointer Events multitáctil, **¿Quién de aquí…?** (preguntas para votar en grupo) y **trivia con IA** (preguntas de tipo test por categoría y dificultad). La trivia funciona **sin conexión** gracias a un banco de respaldo empaquetado en la app.
 - **Plan** es por ahora una página de avance navegable; se implementa en su incremento.
 - **Cuenta de usuario**: registro, inicio de sesión y página de cuenta (`/login`, `/register`, `/account`) conectados a la API. El perfil permite editar el nombre y un enlace de pago propio opcional (solo `https://`), y dar de baja la cuenta. La cabecera muestra **Entrar** o **Mi cuenta** según el estado de sesión.
 
@@ -207,6 +209,12 @@ brindi/
 - **Ruleta por deceleración (ease-out) en lugar de bucle de física**: una función pura calcula la rotación destino para que el segmento elegido (al azar) quede bajo la aguja tras varias vueltas, y la rueda se anima con una transición CSS de salida suave; bajo `prefers-reduced-motion` salta al instante. Más simple y robusto que un bucle de `requestAnimationFrame`, y testeable (la rotación destino siempre aterriza en el segmento correcto).
 - **Toque simultáneo con Pointer Events**: un único conjunto de manejadores cubre ratón y multitáctil; el área usa `touch-action: none` para evitar el scroll, y una cuenta atrás que se reinicia al cambiar el número de dedos elige uno y vibra (`navigator.vibrate`) si está disponible.
 - **Subrutas por juego con navegación consciente**: cada juego es su propia ruta (`/decide/roulette`, `/decide/cards`, `/decide/touch`); la pestaña activa de la barra inferior se calcula incluyendo subrutas, así Decide sigue resaltado dentro de un juego.
+
+### Trivia con IA y fallback en tres niveles
+- **La API como pasarela (gateway) hacia el ai-service**: el navegador nunca habla con el ai-service ni conoce el `INTERNAL_API_KEY`. Llama a `POST /quiz` en NestJS, que valida la petición, añade el secreto interno y reenvía a `/generate-quiz`. La respuesta se traduce a camelCase (`correctIndex`) para un contrato limpio en el frontend. El endpoint es público (la trivia no requiere cuenta) pero con un límite más estricto (20/min) por el coste de la IA.
+- **Respaldo en tres niveles para que la trivia nunca se quede en blanco**: (1) Gemini genera preguntas localizadas; (2) si no hay clave o el JSON no es válido, el ai-service recurre al banco `quiz_fallback_questions` del servidor; (3) si el dispositivo está sin conexión y la API no responde, el frontend usa un **banco empaquetado en la propia app**. Cada nivel se marca como `ai`, `fallback` u `offline` y se avisa al usuario cuando las preguntas son de respaldo.
+- **Banco offline en español (mercado principal)**: el banco empaquetado (≥10 preguntas por categoría) está en español; la IA cubre el inglés cuando hay conexión. Mantener un banco bilingüe curado y verificado se valorará más adelante.
+- **Validación estricta del JSON del modelo**: se descartan preguntas que no tengan exactamente 4 opciones o cuyo índice correcto esté fuera de rango, y se recorta al número pedido; así una respuesta parcialmente malformada del modelo no llega al usuario.
 
 ### ai-service
 - **Servicio de IA separado en FastAPI**: aísla el SDK de Gemini y la lógica de IA del backend de NestJS; cada uno usa la herramienta más adecuada y se despliega/escala por separado. La API de NestJS actuará de pasarela (el navegador nunca habla con el ai-service).

@@ -255,6 +255,14 @@
       "touch": {
         "name": "Touch",
         "tagline": "A finger each; the screen picks."
+      },
+      "group": {
+        "name": "Who here…?",
+        "tagline": "Prompts to vote on and laugh together."
+      },
+      "trivia": {
+        "name": "Trivia",
+        "tagline": "General-knowledge questions with AI."
       }
     },
     "common": {
@@ -294,6 +302,51 @@
       "needMore": "You need at least 2 fingers.",
       "chosen": "Chosen!",
       "reset": "Again"
+    },
+    "trivia": {
+      "heading": "Trivia",
+      "description": "Multiple-choice questions by category and difficulty.",
+      "categoryLabel": "Category",
+      "categories": {
+        "FUTBOL": "Football",
+        "PELICULAS_SERIES": "Movies & TV",
+        "MUSICA": "Music",
+        "GEOGRAFIA": "Geography",
+        "HISTORIA": "History",
+        "CIENCIA": "Science",
+        "RANDOM": "Mixed"
+      },
+      "levelLabel": "Difficulty",
+      "levels": {
+        "FACIL": "Easy",
+        "MEDIO": "Medium",
+        "DIFICIL": "Hard",
+        "IMPOSIBLE": "Impossible"
+      },
+      "countLabel": "Number of questions",
+      "start": "Start",
+      "loading": "Preparing questions…",
+      "loadError": "Couldn't load questions. Please try again.",
+      "offlineNote": "Offline: backup questions",
+      "fallbackNote": "Backup questions",
+      "progress": "Question {current} of {total}",
+      "scoreShort": "{score} correct",
+      "finalScore": "Your score",
+      "playAgain": "Play again",
+      "seeScore": "See score",
+      "next": "Next"
+    },
+    "group": {
+      "heading": "Who here…?",
+      "description": "For each prompt, vote among yourselves.",
+      "playersHeading": "Players",
+      "playerPlaceholder": "Player {number}",
+      "addPlayer": "Add player",
+      "removePlayer": "Remove player {number}",
+      "player": "Player",
+      "start": "Start",
+      "nextPrompt": "Another prompt",
+      "decideRandom": "Let Brindi decide"
     },
     "features": {
       "roulette": {
