@@ -1,0 +1,107 @@
+# ============================================================
+# Brindi — nginx (producción)
+# Plantilla procesada por envsubst al arrancar el contenedor nginx.
+# Solo se sustituyen ${APP_DOMAIN} y ${API_DOMAIN} (ver NGINX_ENVSUBST_FILTER);
+# las variables propias de nginx ($host, $scheme, ...) se conservan.
+#
+# Topología: el frontend y la API viven en subdominios distintos del mismo
+# dominio registrable (mismo "site"), por lo que la cookie de refresco
+# SameSite=Strict sigue viajando entre ambos.
+#
+# TLS: monta los certificados en /etc/nginx/certs/{fullchain,privkey}.pem
+# (Let's Encrypt/certbot o, para pruebas, autofirmados).
+# ============================================================
+
+# Compresión
+gzip on;
+gzip_vary on;
+gzip_proxied any;
+gzip_comp_level 6;
+gzip_min_length 1024;
+gzip_types text/plain text/css application/json application/javascript
+           application/xml text/xml image/svg+xml application/manifest+json;
+
+# Subida de imágenes de tickets (OCR): margen sobre el límite del ai-service (10 MB).
+client_max_body_size 12m;
+
+# --- HTTP -> HTTPS (ambos subdominios) ---
+server {
+    listen 80;
+    # listen [::]:80;  # IPv6 opcional (descomentar si el host lo soporta)
+    server_name ${APP_DOMAIN} ${API_DOMAIN};
+    # Permite el desafío HTTP-01 de Let's Encrypt si se usa certbot webroot.
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# --- Frontend (Next.js) ---
+server {
+    listen 443 ssl http2;
+    # listen [::]:443 ssl http2;  # IPv6 opcional
+    server_name ${APP_DOMAIN};
+
+    ssl_certificate     /etc/nginx/certs/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    # Seguridad
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    # PLAN usa geolocalización del navegador; cámara y micrófono no se utilizan.
+    add_header Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=()" always;
+    # CSP pragmática (Next inyecta scripts/estilos inline). connect-src incluye la API.
+    # Endurecer con nonces es una mejora futura (ver SECURITY.md).
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://${API_DOMAIN}; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" always;
+
+    location / {
+        proxy_pass http://web:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+
+# --- API (NestJS) ---
+server {
+    listen 443 ssl http2;
+    # listen [::]:443 ssl http2;  # IPv6 opcional
+    server_name ${API_DOMAIN};
+
+    ssl_certificate     /etc/nginx/certs/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # La API no se debe embeber ni cachear documentación pública (Swagger ya
+    # está desactivado en producción; se bloquea por si acaso).
+    location = /api/docs { return 404; }
+
+    location / {
+        proxy_pass http://api:4000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

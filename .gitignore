@@ -41,3 +41,8 @@ Thumbs.db
 # === Logs ===
 *.log
 logs/
+
+# Certificados TLS de producción (nunca subir claves)
+infra/nginx/certs/*.pem
+# Variables de entorno de producción
+.env.prod
