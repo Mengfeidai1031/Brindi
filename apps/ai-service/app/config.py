@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     # Cascada de modelos para generación de quiz (misma estrategia que OCR).
     quiz_models: list[str] = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro"]
 
+    # Cascada de modelos para generación de planes (misma estrategia que OCR).
+    plan_models: list[str] = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro"]
+
     # Límite de tamaño de imagen aceptado (10 MB).
     max_image_bytes: int = 10 * 1024 * 1024
 

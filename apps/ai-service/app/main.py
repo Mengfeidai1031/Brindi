@@ -11,7 +11,7 @@ from .config import get_settings
 from .db import Database
 from .gemini import GeminiClient
 from .logging_config import configure_logging
-from .routers import health, ocr, quiz, usage
+from .routers import health, ocr, plan, quiz, usage
 
 logger = logging.getLogger("brindi.ai")
 
@@ -75,6 +75,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(ocr.router)
     app.include_router(quiz.router)
+    app.include_router(plan.router)
     app.include_router(usage.router)
     return app
 

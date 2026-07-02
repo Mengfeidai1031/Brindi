@@ -179,3 +179,77 @@ def test_quiz_no_questions_returns_502(client_factory):
     res = client.post("/generate-quiz", json=QUIZ_BODY, headers={"X-Internal-Key": INTERNAL_KEY})
     assert res.status_code == 502
     assert db.logs == [("GENERATE_QUIZ", "fallback", 0, False)]
+
+
+# --- /generate-plan ---
+
+from app.models import PlanActivity  # noqa: E402
+
+PLAN_BODY = {
+    "location_text": "Las Palmas",
+    "party_size": 4,
+    "category": "COPAS",
+    "budget": "BAJO",
+    "duration": "NOCHE",
+    "locale": "es",
+}
+
+
+def test_plan_requires_internal_key(client_factory):
+    client = client_factory(FakeDB(), FakeGemini())
+    assert client.post("/generate-plan", json=PLAN_BODY).status_code == 401
+
+
+def test_plan_validation_requires_location(client_factory):
+    client = client_factory(FakeDB(), FakeGemini())
+    bad = {"party_size": 2, "category": "COPAS", "budget": "BAJO", "duration": "NOCHE"}
+    res = client.post("/generate-plan", json=bad, headers={"X-Internal-Key": INTERNAL_KEY})
+    assert res.status_code == 422
+
+
+def test_plan_validation_bad_category(client_factory):
+    client = client_factory(FakeDB(), FakeGemini())
+    bad = {**PLAN_BODY, "category": "NOPE"}
+    res = client.post("/generate-plan", json=bad, headers={"X-Internal-Key": INTERNAL_KEY})
+    assert res.status_code == 422
+
+
+def test_plan_ai_success(client_factory):
+    db = FakeDB()
+
+    class PlanGemini(FakeGemini):
+        def generate_plan(self, req):
+            activity = PlanActivity(
+                title="Café con vistas",
+                place_name="Café Central",
+                description="Tomad algo.",
+                duration_label="1 h",
+                cost_label="5 € pp",
+                map_query="Café Central Las Palmas",
+            )
+            return ("Una tarde estupenda.", [activity], "gemini-2.5-flash")
+
+    client = client_factory(db, PlanGemini())
+    res = client.post("/generate-plan", json=PLAN_BODY, headers={"X-Internal-Key": INTERNAL_KEY})
+    assert res.status_code == 200
+    body = res.json()
+    assert body["source"] == "ai"
+    assert body["intro"].startswith("Una tarde")
+    assert len(body["activities"]) == 1
+    assert body["activities"][0]["map_query"] == "Café Central Las Palmas"
+    assert db.logs == [("GENERATE_PLAN", "gemini-2.5-flash", 0, True)]
+
+
+def test_plan_unavailable_returns_503(client_factory):
+    from app.gemini import GeminiUnavailableError
+
+    db = FakeDB()
+
+    class FailingGemini(FakeGemini):
+        def generate_plan(self, req):
+            raise GeminiUnavailableError("sin clave")
+
+    client = client_factory(db, FailingGemini())
+    res = client.post("/generate-plan", json=PLAN_BODY, headers={"X-Internal-Key": INTERNAL_KEY})
+    assert res.status_code == 503
+    assert db.logs == [("GENERATE_PLAN", "unavailable", 0, False)]
