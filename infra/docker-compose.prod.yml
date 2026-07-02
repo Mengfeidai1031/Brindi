@@ -1,0 +1,126 @@
+# ============================================================
+# Brindi — Docker Compose de PRODUCCIÓN
+#
+# Topología:
+#   nginx (80/443, único expuesto) ──┬── https://${APP_DOMAIN}      -> web (Next.js)
+#                                     └── https://${API_DOMAIN}      -> api (NestJS)
+#   api ── ai-service (interno) ── postgres (interno, con volumen persistente)
+#
+# Ningún servicio salvo nginx publica puertos al host. La base de datos NO es
+# accesible desde fuera de la red de Docker.
+#
+# Uso:
+#   1) Copia .env.prod.example a .env.prod y rellena los secretos y dominios.
+#   2) Coloca los certificados TLS en infra/nginx/certs/{fullchain,privkey}.pem
+#   3) docker compose -f infra/docker-compose.prod.yml --env-file .env.prod up -d --build
+# ============================================================
+
+name: brindi-prod
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: brindi-postgres-prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-brindi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env.prod}
+      POSTGRES_DB: ${POSTGRES_DB:-brindi}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-brindi} -d ${POSTGRES_DB:-brindi}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+    networks: [brindi-prod-net]
+
+  ai-service:
+    build:
+      context: ../apps/ai-service
+    container_name: brindi-ai-service-prod
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-brindi}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-brindi}?schema=public
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:?Define INTERNAL_API_KEY en .env.prod}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=3).status == 200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    networks: [brindi-prod-net]
+
+  api:
+    build:
+      context: ../apps/api
+    container_name: brindi-api-prod
+    restart: always
+    environment:
+      NODE_ENV: production
+      APP_NAME: ${APP_NAME:-Brindi}
+      API_PORT: "4000"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-brindi}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-brindi}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env.prod}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Define JWT_REFRESH_SECRET en .env.prod}
+      WEB_ORIGIN: https://${APP_DOMAIN:?Define APP_DOMAIN en .env.prod}
+      AI_SERVICE_URL: http://ai-service:5000
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:?Define INTERNAL_API_KEY en .env.prod}
+      # Google OAuth (opcional): sin client id/secret, el login con Google se desactiva.
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # Debe ser https://<API_DOMAIN>/auth/google/callback (ver .env.prod.example).
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai-service:
+        condition: service_started
+    networks: [brindi-prod-net]
+
+  web:
+    build:
+      context: ../apps/web
+      dockerfile: Dockerfile.prod
+      args:
+        # Las NEXT_PUBLIC_* se hornean en build time: apuntan al subdominio de la API.
+        NEXT_PUBLIC_API_URL: https://${API_DOMAIN:?Define API_DOMAIN en .env.prod}
+        NEXT_PUBLIC_APP_NAME: ${APP_NAME:-Brindi}
+    container_name: brindi-web-prod
+    restart: always
+    depends_on:
+      - api
+    networks: [brindi-prod-net]
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: brindi-nginx-prod
+    restart: always
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Define APP_DOMAIN en .env.prod}
+      API_DOMAIN: ${API_DOMAIN:?Define API_DOMAIN en .env.prod}
+      # Solo se sustituyen estas variables en la plantilla; las $ de nginx se conservan.
+      NGINX_ENVSUBST_FILTER: "APP_DOMAIN|API_DOMAIN"
+    volumes:
+      - ./nginx/templates:/etc/nginx/templates:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - ./nginx/certbot:/var/www/certbot:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - web
+      - api
+    networks: [brindi-prod-net]
+
+networks:
+  brindi-prod-net:
+    driver: bridge
+
+volumes:
+  postgres-data:

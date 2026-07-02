@@ -52,7 +52,7 @@ Desarrollo incremental; cada incremento es funcional y verificable.
 | 9 | DECIDE: quiz de grupo + trivia con IA + modo offline | ✅ |
 | 10 | PLAN: geolocalización + preferencias + plan con IA | ✅ |
 | 11 | OAuth con Google | ✅ |
-| 12 | Nginx + compose de producción + SECURITY.md (OWASP) | ⏳ |
+| 12 | Nginx + compose de producción + SECURITY.md | ✅ |
 | 13 | Tests unitarios + verify.sh | ⏳ |
 | 14 | E2E (Playwright), accesibilidad (axe, Lighthouse), monkey, carga | ⏳ |
 | 15 | CI (GitHub Actions) + Dependabot + docs finales | ⏳ |
@@ -156,6 +156,46 @@ cd apps/web
 npm install
 npm run dev   # http://localhost:3000
 ```
+
+## Despliegue en producción
+
+El despliegue de producción se orquesta con `infra/docker-compose.prod.yml` y un
+**nginx** como reverse proxy con TLS. El frontend y la API se sirven en
+**subdominios** del mismo dominio (p. ej. `brindi.tudominio.com` y
+`api.brindi.tudominio.com`), de modo que la cookie de sesión `SameSite=Strict`
+sigue funcionando entre ambos.
+
+Topología: **solo nginx** publica puertos (80/443). El frontend, la API, el
+`ai-service` y PostgreSQL viven en la red interna de Docker; la base de datos no
+es accesible desde fuera.
+
+```
+nginx (80/443) ──┬── https://APP_DOMAIN  -> web (Next.js, imagen standalone)
+                 └── https://API_DOMAIN  -> api (NestJS)
+api ── ai-service (interno) ── postgres (interno, volumen persistente)
+```
+
+Pasos:
+
+1. Copia `.env.prod.example` a `.env.prod` y rellena dominios y secretos
+   (`openssl rand -hex 48` para los JWT, etc.).
+2. Coloca los certificados TLS en `infra/nginx/certs/{fullchain,privkey}.pem`
+   (Let's Encrypt o, para pruebas, autofirmados; ver el README de esa carpeta).
+3. Arranca:
+
+   ```bash
+   docker compose -f infra/docker-compose.prod.yml --env-file .env.prod up -d --build
+   ```
+
+La imagen del frontend es **multi-stage con salida `standalone`** de Next.js
+(`Dockerfile.prod`), por lo que es mínima. Las variables `NEXT_PUBLIC_*` se
+hornean en build time apuntando al subdominio de la API. La API confía en
+`X-Forwarded-For` (`trust proxy`) para aplicar el rate limiting por la IP real, y
+la documentación Swagger se desactiva en producción.
+
+Las medidas de seguridad (autenticación, aislamiento de red, TLS, cabeceras,
+rate limiting, gestión de secretos) y las mejoras previstas están documentadas en
+**[SECURITY.md](SECURITY.md)**.
 
 ## Estructura del repositorio
 
