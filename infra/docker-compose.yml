@@ -65,6 +65,10 @@ services:
       # Pasarela al ai-service interno (proxy de quiz/OCR).
       AI_SERVICE_URL: http://ai-service:5000
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:?INTERNAL_API_KEY no definido. Ejecuta scripts/setup-local.sh}
+      # Google OAuth (opcional): sin client id/secret, el login con Google se desactiva.
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost:4000/auth/google/callback}
     ports:
       - "${API_PORT:-4000}:4000"
     depends_on:

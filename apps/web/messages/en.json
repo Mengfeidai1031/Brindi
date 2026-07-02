@@ -59,6 +59,12 @@
       "emailTaken": "That email is already registered. Want to log in?",
       "invalidCredentials": "Wrong email or password.",
       "generic": "Something went wrong. Please try again."
+    },
+    "google": {
+      "button": "Continue with Google",
+      "divider": "or",
+      "errorUnavailable": "Google sign-in isn't available.",
+      "errorFailed": "Couldn't sign in with Google. Please try again."
     }
   },
   "account": {

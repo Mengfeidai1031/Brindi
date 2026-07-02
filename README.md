@@ -51,7 +51,7 @@ Desarrollo incremental; cada incremento es funcional y verificable.
 | 8 | DECIDE: ruleta, cartas, toque simultáneo | ✅ |
 | 9 | DECIDE: quiz de grupo + trivia con IA + modo offline | ✅ |
 | 10 | PLAN: geolocalización + preferencias + plan con IA | ✅ |
-| 11 | OAuth con Google | ⏳ |
+| 11 | OAuth con Google | ✅ |
 | 12 | Nginx + compose de producción + SECURITY.md (OWASP) | ⏳ |
 | 13 | Tests unitarios + verify.sh | ⏳ |
 | 14 | E2E (Playwright), accesibilidad (axe, Lighthouse), monkey, carga | ⏳ |
@@ -87,6 +87,9 @@ La API arranca dentro de Docker con `setup-local.sh`; en cada arranque el conten
 | POST | `/auth/login` | Login; devuelve access token y rota la cookie de refresco — 10 req/min |
 | POST | `/auth/refresh` | Renueva el access token desde la cookie httpOnly (rotación) |
 | POST | `/auth/logout` | Elimina la cookie de refresco |
+| GET | `/auth/providers` | Proveedores externos disponibles (p. ej. `{ google: true }`) |
+| GET | `/auth/google` | Inicia el flujo OAuth de Google (redirección) |
+| GET | `/auth/google/callback` | Callback de Google: crea/vincula la cuenta y fija la sesión |
 | GET | `/users/me` | Perfil del usuario autenticado (Bearer) |
 | PATCH | `/users/me` | Actualiza nombre, idioma o enlace de pago propio |
 | DELETE | `/users/me` | Baja lógica de la cuenta (`deleted_at`) |
@@ -223,6 +226,13 @@ brindi/
 - **Geolocalización opcional y con degradación elegante**: el usuario puede escribir una ciudad o pulsar «Usar mi ubicación» (API del navegador, que pide permiso). Si lo deniega o el navegador no lo admite, se explica y se vuelve al campo de texto. Las coordenadas se envían solo si el usuario las comparte y nunca se almacenan.
 - **El plan requiere IA (sin fallback)**: a diferencia de la trivia, no hay banco de respaldo; un plan depende por completo de la ubicación y preferencias. Sin `GEMINI_API_KEY`, `POST /plan` devuelve 503 y el frontend muestra un aviso claro, igual que el OCR.
 - **La API traduce el contrato camelCase ⇄ snake_case**: el frontend y NestJS usan camelCase (`partySize`, `locationText`); el ai-service (Pydantic) usa snake_case. El proxy traduce en ambos sentidos, así cada capa mantiene su convención idiomática.
+
+### Inicio de sesión con Google (OAuth 2.0)
+- **Reutiliza la cookie de refresco existente**: el callback de Google no inventa un mecanismo nuevo. Crea o vincula el usuario, emite los mismos tokens que el login por contraseña y fija la cookie `brindi_refresh`; luego redirige al frontend, que rehidrata la sesión con su `bootstrapAuth` habitual (`/auth/refresh`). El access token nunca viaja en la URL.
+- **Implementación manual, sin Passport**: el intercambio de código y la obtención del perfil son unas pocas llamadas `fetch` con endpoints **configurables** (valores por defecto de Google). Menos dependencias y, sobre todo, permite probar el flujo completo de extremo a extremo contra un servidor de Google falso.
+- **Vinculación por email**: si ya existe una cuenta con ese email (registrada por contraseña), Google se vincula a ella (se rellena `google_id`) en lugar de duplicarla; el usuario conserva ambos métodos de acceso. Si no existe, se crea una cuenta sin contraseña local (el login por contraseña la rechaza con el mismo mensaje anti-enumeración).
+- **Protección CSRF con cookie de estado**: `/auth/google` genera un nonce, lo guarda en una cookie `SameSite=Lax` (necesario para que viaje en la vuelta desde Google) y lo incrusta en el parámetro `state` (junto al idioma); el callback verifica que coincidan antes de continuar.
+- **Descubrimiento de proveedores**: el frontend consulta `GET /auth/providers` y solo muestra el botón de Google si la API tiene credenciales configuradas; así la función aparece únicamente cuando está lista. El esquema ya preveía `google_id` y una contraseña opcional, por lo que **no hizo falta migración**.
 
 ### ai-service
 - **Servicio de IA separado en FastAPI**: aísla el SDK de Gemini y la lógica de IA del backend de NestJS; cada uno usa la herramienta más adecuada y se despliega/escala por separado. La API de NestJS actuará de pasarela (el navegador nunca habla con el ai-service).
