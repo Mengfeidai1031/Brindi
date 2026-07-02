@@ -59,6 +59,12 @@
       "emailTaken": "Ese email ya está registrado. ¿Quieres entrar?",
       "invalidCredentials": "Email o contraseña incorrectos.",
       "generic": "Algo ha ido mal. Inténtalo de nuevo."
+    },
+    "google": {
+      "button": "Continuar con Google",
+      "divider": "o",
+      "errorUnavailable": "El inicio de sesión con Google no está disponible.",
+      "errorFailed": "No se pudo iniciar sesión con Google. Inténtalo de nuevo."
     }
   },
   "account": {
