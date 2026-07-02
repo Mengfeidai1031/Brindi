@@ -1,4 +1,5 @@
 import { API_URL } from '@/config/app';
+import type { PlanResult } from '@/lib/plan/plan-types';
 import type { QuizQuestion, QuizSource } from '@/lib/decide/quiz-types';
 import { type PublicUser, useAuthStore } from '@/stores/auth-store';
 
@@ -177,6 +178,28 @@ export interface QuizApiInput {
 /** Pide preguntas a la API (que internamente usa IA con fallback al banco del servidor). */
 export async function fetchQuiz(input: QuizApiInput): Promise<QuizApiResult> {
   return apiFetch<QuizApiResult>('/quiz', {
+    method: 'POST',
+    auth: false,
+    body: JSON.stringify(input),
+  });
+}
+
+// ---- Plan ----
+
+export interface PlanApiInput {
+  locationText?: string;
+  lat?: number;
+  lng?: number;
+  partySize: number;
+  category: string;
+  budget: string;
+  duration: string;
+  locale: string;
+}
+
+/** Genera un plan con IA. Lanza ApiError con status 503 si el servicio no está disponible. */
+export async function fetchPlan(input: PlanApiInput): Promise<PlanResult> {
+  return apiFetch<PlanResult>('/plan', {
     method: 'POST',
     auth: false,
     body: JSON.stringify(input),

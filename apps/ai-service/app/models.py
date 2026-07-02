@@ -2,7 +2,7 @@
 
 from decimal import ROUND_HALF_UP, Decimal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 def to_cents(amount: float | int | str) -> int:
@@ -157,3 +157,121 @@ def clean_quiz_questions(generation: QuizGeneration, limit: int) -> list[QuizQue
         if len(out) >= limit:
             break
     return out
+
+
+# --- Plan (planificador de actividades) ---
+
+PLAN_CATEGORIES = {
+    "COMIDA",
+    "COPAS",
+    "CULTURA",
+    "AIRE_LIBRE",
+    "FIESTA",
+    "TRANQUILO",
+    "SORPRESA",
+}
+PLAN_BUDGETS = {"BAJO", "MEDIO", "ALTO"}
+PLAN_DURATIONS = {"UN_RATO", "MEDIA_JORNADA", "DIA_COMPLETO", "NOCHE"}
+PLAN_LOCALES = {"es", "en"}
+
+
+class PlanActivityRaw(BaseModel):
+    """Actividad tal como la genera el modelo (esquema de salida estructurada)."""
+
+    title: str
+    place_name: str = ""
+    description: str = ""
+    duration_label: str = ""
+    cost_label: str = ""
+    map_query: str = ""
+
+
+class PlanGeneration(BaseModel):
+    intro: str = ""
+    activities: list[PlanActivityRaw] = Field(default_factory=list)
+
+
+class PlanActivity(BaseModel):
+    title: str
+    place_name: str
+    description: str
+    duration_label: str
+    cost_label: str
+    # Texto de búsqueda para el deep link de "Cómo llegar" (Google Maps).
+    map_query: str
+
+
+class PlanRequest(BaseModel):
+    location_text: str | None = None
+    lat: float | None = None
+    lng: float | None = None
+    party_size: int = Field(ge=1, le=50)
+    category: str
+    budget: str
+    duration: str
+    locale: str = "es"
+
+    @field_validator("category")
+    @classmethod
+    def _validate_category(cls, value: str) -> str:
+        if value not in PLAN_CATEGORIES:
+            raise ValueError("categoría no válida")
+        return value
+
+    @field_validator("budget")
+    @classmethod
+    def _validate_budget(cls, value: str) -> str:
+        if value not in PLAN_BUDGETS:
+            raise ValueError("presupuesto no válido")
+        return value
+
+    @field_validator("duration")
+    @classmethod
+    def _validate_duration(cls, value: str) -> str:
+        if value not in PLAN_DURATIONS:
+            raise ValueError("duración no válida")
+        return value
+
+    @field_validator("locale")
+    @classmethod
+    def _validate_locale(cls, value: str) -> str:
+        return value if value in PLAN_LOCALES else "es"
+
+    @model_validator(mode="after")
+    def _require_location(self) -> "PlanRequest":
+        has_text = bool(self.location_text and self.location_text.strip())
+        has_coords = self.lat is not None and self.lng is not None
+        if not has_text and not has_coords:
+            raise ValueError("se requiere una ciudad o coordenadas")
+        return self
+
+
+class PlanResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
+    intro: str
+    activities: list[PlanActivity]
+    source: str  # "ai"
+    model_used: str | None = None
+
+
+def clean_plan(generation: PlanGeneration, max_activities: int = 3) -> tuple[str, list[PlanActivity]]:
+    """Filtra actividades válidas (con título) y recorta a `max_activities`."""
+    activities: list[PlanActivity] = []
+    for a in generation.activities:
+        if not a.title.strip():
+            continue
+        place = a.place_name.strip() or a.title.strip()
+        activities.append(
+            PlanActivity(
+                title=a.title.strip(),
+                place_name=place,
+                description=a.description.strip(),
+                duration_label=a.duration_label.strip(),
+                cost_label=a.cost_label.strip(),
+                map_query=a.map_query.strip() or place,
+            )
+        )
+        if len(activities) >= max_activities:
+            break
+    return generation.intro.strip(), activities

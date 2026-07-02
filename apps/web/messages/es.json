@@ -374,6 +374,48 @@
   "plan": {
     "name": "Plan",
     "lead": "Un plan a medida con lugares reales de vuestra zona, generado por IA.",
+    "loading": "Creando tu plan…",
+    "locationLabel": "¿Dónde?",
+    "locationPlaceholder": "Escribe una ciudad o zona",
+    "locationDetected": "Usando tu ubicación actual",
+    "clearLocation": "Quitar ubicación",
+    "useMyLocation": "Usar mi ubicación",
+    "geoDenied": "No pudimos acceder a tu ubicación. Escribe una ciudad.",
+    "geoUnsupported": "Tu navegador no permite geolocalización. Escribe una ciudad.",
+    "partyLabel": "¿Cuántos sois?",
+    "fewer": "Menos personas",
+    "more": "Más personas",
+    "categoryLabel": "¿Qué os apetece?",
+    "categories": {
+      "COMIDA": "Comer",
+      "COPAS": "Tomar algo",
+      "CULTURA": "Cultura",
+      "AIRE_LIBRE": "Aire libre",
+      "FIESTA": "Fiesta",
+      "TRANQUILO": "Tranquilo",
+      "SORPRESA": "Sorpréndeme"
+    },
+    "budgetLabel": "Presupuesto",
+    "budgets": {
+      "BAJO": "Ajustado",
+      "MEDIO": "Medio",
+      "ALTO": "Sin límite"
+    },
+    "durationLabel": "¿Cuánto tiempo?",
+    "durations": {
+      "UN_RATO": "Un rato",
+      "MEDIA_JORNADA": "Media jornada",
+      "DIA_COMPLETO": "Todo el día",
+      "NOCHE": "Toda la noche"
+    },
+    "generate": "Generar plan",
+    "needLocation": "Indica una ciudad o comparte tu ubicación para empezar.",
+    "errorUnavailable": "El generador de planes no está disponible ahora mismo. Inténtalo más tarde.",
+    "errorNetwork": "Sin conexión. Comprueba tu red e inténtalo de nuevo.",
+    "errorGeneric": "No se pudo generar el plan. Inténtalo de nuevo.",
+    "howToGetThere": "Cómo llegar",
+    "privacyNote": "No guardamos tu ubicación ni tu plan.",
+    "newPlan": "Otro plan",
     "features": {
       "location": {
         "title": "Vuestra zona",

@@ -50,7 +50,7 @@ Desarrollo incremental; cada incremento es funcional y verificable.
 | 7 | ai-service (FastAPI) + cascada Gemini + OCR de tickets | ✅ |
 | 8 | DECIDE: ruleta, cartas, toque simultáneo | ✅ |
 | 9 | DECIDE: quiz de grupo + trivia con IA + modo offline | ✅ |
-| 10 | PLAN: geolocalización + Places (caché Redis) + plan IA | ⏳ |
+| 10 | PLAN: geolocalización + preferencias + plan con IA | ✅ |
 | 11 | OAuth con Google | ⏳ |
 | 12 | Nginx + compose de producción + SECURITY.md (OWASP) | ⏳ |
 | 13 | Tests unitarios + verify.sh | ⏳ |
@@ -91,6 +91,7 @@ La API arranca dentro de Docker con `setup-local.sh`; en cada arranque el conten
 | PATCH | `/users/me` | Actualiza nombre, idioma o enlace de pago propio |
 | DELETE | `/users/me` | Baja lógica de la cuenta (`deleted_at`) |
 | POST | `/quiz` | Genera preguntas de trivia (proxy al ai-service; público) — 20 req/min |
+| POST | `/plan` | Genera un plan de actividades (proxy al ai-service; público) — 15 req/min |
 
 El access token (15 min) viaja como `Authorization: Bearer`; el refresh token (7 días) vive en una cookie `httpOnly` con `SameSite=Strict` y `path=/auth`, y se rota en cada refresco.
 
@@ -115,11 +116,12 @@ Endpoints (documentados en OpenAPI, accesibles vía la API o `docker exec`):
 | GET | `/health` | Estado del servicio, base de datos y si hay clave de Gemini (público) |
 | POST | `/ocr-receipt` | Recibe una imagen de ticket y devuelve ítems con importes en céntimos (interno) |
 | POST | `/generate-quiz` | Genera preguntas de trivia con Gemini; si no hay clave o falla, recurre al banco local (interno) |
+| POST | `/generate-plan` | Genera un plan de actividades con Gemini; sin clave devuelve 503 (interno) |
 | GET | `/usage` | Resumen de consumo de IA por servicio (interno) |
 
 El **OCR** usa una cascada de modelos (`gemini-2.5-flash` → `gemini-2.0-flash` → `gemini-2.5-pro`): se prueban en orden y se usa el primero que responde con un JSON válido. La **generación de quiz** usa la misma estrategia de cascada y valida el JSON (exactamente 4 opciones e índice correcto en rango) antes de aceptarlo; si Gemini no está disponible o no devuelve preguntas válidas, recurre al banco `quiz_fallback_questions`. El servicio arranca aunque falte `GEMINI_API_KEY` (el OCR responde 502 y la trivia cae al banco local), para no bloquear el resto del stack.
 
-Un próximo incremento añadirá `/generate-plan` y conectará el OCR al paso 2 del wizard de Divide a través de la API.
+La **generación de planes** usa la misma cascada y valida la estructura (actividades con título, recorte a 3). A diferencia de la trivia, un plan personalizado no se puede pre-cocinar: si Gemini no está disponible, el endpoint devuelve 503 (como el OCR). Un próximo incremento conectará el OCR al paso 2 del wizard de Divide a través de la API.
 
 Para desarrollo sin Docker:
 
@@ -128,7 +130,7 @@ cd apps/ai-service
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
 DATABASE_URL=... INTERNAL_API_KEY=... GEMINI_API_KEY=... uvicorn app.main:app --reload --port 5000
-pytest        # suite de tests (44 casos; los de BD se omiten sin TEST_DATABASE_URL)
+pytest        # suite de tests (59 casos; los de BD se omiten sin TEST_DATABASE_URL)
 ```
 
 ## Frontend (apps/web)
@@ -141,7 +143,7 @@ Next.js 15 (App Router) + TypeScript + Tailwind CSS 4, con Framer Motion para an
 - **Navegación**: header con navegación en escritorio y barra de pestañas inferior estilo app en móvil (mobile-first).
 - **Divide** (módulo completo): wizard de 4 pasos (personas → cuenta → reparto → resultado) con entrada manual de ítems y los cuatro modos de reparto (partes iguales, por ítems, porcentajes que suman 100 % y extra fijo). Todo el cálculo ocurre en el dispositivo y **no se persiste nada**; el resultado se comparte con la Web Share API (o se copia al portapapeles). Si has iniciado sesión y tienes enlace de pago, se incluye en el mensaje.
 - **Decide**: hub con cinco juegos para decidir y jugar en grupo. **Ruleta** con giro físico y confeti, **cartas** (voltear hasta dar con la marcada), **toque simultáneo** con Pointer Events multitáctil, **¿Quién de aquí…?** (preguntas para votar en grupo) y **trivia con IA** (preguntas de tipo test por categoría y dificultad). La trivia funciona **sin conexión** gracias a un banco de respaldo empaquetado en la app.
-- **Plan** es por ahora una página de avance navegable; se implementa en su incremento.
+- **Plan**: a partir de la ubicación (texto o **geolocalización** del navegador) y de las preferencias (nº de personas, tipo de plan, presupuesto y tiempo), genera con IA un **plan narrativo con 1-3 actividades** reales y concretas. Cada actividad incluye un enlace **«Cómo llegar»** que abre Google Maps. No se guarda ni la ubicación ni el plan.
 - **Cuenta de usuario**: registro, inicio de sesión y página de cuenta (`/login`, `/register`, `/account`) conectados a la API. El perfil permite editar el nombre y un enlace de pago propio opcional (solo `https://`), y dar de baja la cuenta. La cabecera muestra **Entrar** o **Mi cuenta** según el estado de sesión.
 
 Para desarrollo con hot reload:
@@ -215,6 +217,12 @@ brindi/
 - **Respaldo en tres niveles para que la trivia nunca se quede en blanco**: (1) Gemini genera preguntas localizadas; (2) si no hay clave o el JSON no es válido, el ai-service recurre al banco `quiz_fallback_questions` del servidor; (3) si el dispositivo está sin conexión y la API no responde, el frontend usa un **banco empaquetado en la propia app**. Cada nivel se marca como `ai`, `fallback` u `offline` y se avisa al usuario cuando las preguntas son de respaldo.
 - **Banco offline en español (mercado principal)**: el banco empaquetado (≥10 preguntas por categoría) está en español; la IA cubre el inglés cuando hay conexión. Mantener un banco bilingüe curado y verificado se valorará más adelante.
 - **Validación estricta del JSON del modelo**: se descartan preguntas que no tengan exactamente 4 opciones o cuyo índice correcto esté fuera de rango, y se recorta al número pedido; así una respuesta parcialmente malformada del modelo no llega al usuario.
+
+### Módulo Plan
+- **Deep links de Google Maps en lugar de la Places API**: para «Cómo llegar» se construye un enlace de búsqueda de Google Maps (`maps/search/?api=1&query=…`) con el nombre del sitio y la ciudad. Funciona sin clave de API ni configuración adicional. Integrar la Places API (autocompletado de ciudad y lugares verificados con dirección/foto) queda como mejora futura; el diseño ya separa la generación (ai-service) del enlace (frontend) para facilitarlo.
+- **Geolocalización opcional y con degradación elegante**: el usuario puede escribir una ciudad o pulsar «Usar mi ubicación» (API del navegador, que pide permiso). Si lo deniega o el navegador no lo admite, se explica y se vuelve al campo de texto. Las coordenadas se envían solo si el usuario las comparte y nunca se almacenan.
+- **El plan requiere IA (sin fallback)**: a diferencia de la trivia, no hay banco de respaldo; un plan depende por completo de la ubicación y preferencias. Sin `GEMINI_API_KEY`, `POST /plan` devuelve 503 y el frontend muestra un aviso claro, igual que el OCR.
+- **La API traduce el contrato camelCase ⇄ snake_case**: el frontend y NestJS usan camelCase (`partySize`, `locationText`); el ai-service (Pydantic) usa snake_case. El proxy traduce en ambos sentidos, así cada capa mantiene su convención idiomática.
 
 ### ai-service
 - **Servicio de IA separado en FastAPI**: aísla el SDK de Gemini y la lógica de IA del backend de NestJS; cada uno usa la herramienta más adecuada y se despliega/escala por separado. La API de NestJS actuará de pasarela (el navegador nunca habla con el ai-service).
