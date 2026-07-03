@@ -54,7 +54,7 @@ Desarrollo incremental; cada incremento es funcional y verificable.
 | 11 | OAuth con Google | ✅ |
 | 12 | Nginx + compose de producción + SECURITY.md | ✅ |
 | 13 | Tests unitarios + verify.sh | ✅ |
-| 14 | E2E (Playwright), accesibilidad (axe, Lighthouse), monkey, carga | ⏳ |
+| 14 | E2E (Playwright), accesibilidad (axe, Lighthouse), monkey, carga | ✅ |
 | 15 | CI (GitHub Actions) + Dependabot + docs finales | ⏳ |
 
 ## Requisitos
@@ -184,6 +184,26 @@ Qué comprueba:
 
 Los tests de cada app también pueden lanzarse por separado con `npm test`
 (en `apps/api` y `apps/web`) o `python -m pytest` (en `apps/ai-service`).
+
+### Pruebas E2E y de calidad (carpeta `tests/`)
+
+Aparte de los tests unitarios, hay una suite de extremo a extremo en `tests/`:
+
+- **Playwright + axe**: recorre los flujos reales en navegador (home, asistente
+  de Divide completo, hub y juegos de Decide, y registro/login con backend), con
+  comprobaciones de accesibilidad integradas que fallan ante violaciones serias.
+  Incluye un test *monkey* de clics aleatorios que vigila excepciones.
+- **Lighthouse**: audita rendimiento, accesibilidad, buenas prácticas y SEO del
+  build de producción (accesibilidad exigida a 0,9).
+- **k6**: prueba de humo de carga contra endpoints públicos de la API.
+
+```bash
+cd tests && npm install
+npm run test:e2e:install     # instala el navegador (una vez)
+npm run test:e2e:web         # E2E de frontend (Playwright arranca el build solo)
+```
+
+Ver `tests/README.md` para Lighthouse, k6 y las pruebas con stack completo.
 
 ## Despliegue en producción
 
