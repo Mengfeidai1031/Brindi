@@ -53,7 +53,7 @@ Desarrollo incremental; cada incremento es funcional y verificable.
 | 10 | PLAN: geolocalización + preferencias + plan con IA | ✅ |
 | 11 | OAuth con Google | ✅ |
 | 12 | Nginx + compose de producción + SECURITY.md | ✅ |
-| 13 | Tests unitarios + verify.sh | ⏳ |
+| 13 | Tests unitarios + verify.sh | ✅ |
 | 14 | E2E (Playwright), accesibilidad (axe, Lighthouse), monkey, carga | ⏳ |
 | 15 | CI (GitHub Actions) + Dependabot + docs finales | ⏳ |
 
@@ -156,6 +156,34 @@ cd apps/web
 npm install
 npm run dev   # http://localhost:3000
 ```
+
+## Tests y verificación
+
+Cada parte del monorepo tiene su propia batería de tests, y `scripts/verify.sh`
+las ejecuta todas de una vez (apto para CI; devuelve código != 0 si algo falla):
+
+```bash
+./scripts/verify.sh
+# opcional: incluir los tests de integración del ai-service contra una BD real
+TEST_DATABASE_URL=postgresql://brindi:...@localhost:5432/brindi ./scripts/verify.sh
+```
+
+Qué comprueba:
+
+- **`ai-service` — pytest**: validación de OCR/quiz/plan, cascada de modelos con
+  dobles y, si hay `TEST_DATABASE_URL`, integración real con PostgreSQL.
+- **`api` — jest**: tests unitarios de los servicios (autenticación y emisión de
+  tokens, login con Google y vinculación de cuentas, proxies de quiz y plan con
+  `fetch` simulado, y el mapper público de usuario que nunca filtra el hash ni el
+  `google_id`).
+- **`web` — node --test**: la lógica pura (reparto proporcional sin perder
+  céntimos, parser de importes, azar inyectable y la invariante de la ruleta) con
+  el runner nativo de Node, sin dependencias extra.
+- **builds de `api` y `web`**: `nest build` y `next build` como comprobación de
+  tipos de extremo a extremo.
+
+Los tests de cada app también pueden lanzarse por separado con `npm test`
+(en `apps/api` y `apps/web`) o `python -m pytest` (en `apps/ai-service`).
 
 ## Despliegue en producción
 
