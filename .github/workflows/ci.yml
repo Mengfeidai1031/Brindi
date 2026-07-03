@@ -1,0 +1,165 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancela ejecuciones anteriores de la misma rama/PR.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------
+  # Batería completa: tests del ai-service (con PostgreSQL), de la API,
+  # de la lógica del frontend y los dos builds (vía scripts/verify.sh).
+  # ---------------------------------------------------------------
+  verify:
+    name: Tests y builds
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: brindi
+          POSTGRES_PASSWORD: brindi
+          POSTGRES_DB: brindi
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U brindi -d brindi"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://brindi:brindi@localhost:5432/brindi?schema=public
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            apps/api/package-lock.json
+            apps/web/package-lock.json
+
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Instalar dependencias del ai-service
+        run: pip install -r apps/ai-service/requirements-dev.txt
+
+      - name: Instalar dependencias de la API
+        run: npm ci
+        working-directory: apps/api
+
+      - name: Preparar la base de datos (esquema + datos de respaldo)
+        working-directory: apps/api
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+          npm run prisma:seed
+
+      - name: Instalar dependencias del frontend
+        run: npm ci
+        working-directory: apps/web
+
+      - name: Verificación completa (scripts/verify.sh)
+        env:
+          TEST_DATABASE_URL: postgresql://brindi:brindi@localhost:5432/brindi?schema=public
+        run: ./scripts/verify.sh
+
+  # ---------------------------------------------------------------
+  # E2E de frontend (Playwright + axe). No requiere backend: se excluyen
+  # las pruebas etiquetadas @backend.
+  # ---------------------------------------------------------------
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            apps/web/package-lock.json
+            tests/package-lock.json
+
+      - name: Instalar y construir el frontend
+        working-directory: apps/web
+        run: |
+          npm ci
+          npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+
+      - name: Instalar dependencias de pruebas
+        run: npm ci
+        working-directory: tests
+
+      - name: Instalar el navegador de Playwright
+        run: npx playwright install --with-deps chromium
+        working-directory: tests
+
+      - name: Ejecutar E2E (solo frontend, Chromium)
+        run: npm run test:e2e:web -- --project=chromium
+        working-directory: tests
+
+      - name: Publicar el informe de Playwright
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: tests/playwright-report
+          retention-days: 7
+
+  # ---------------------------------------------------------------
+  # Lighthouse (informativo: no bloquea el merge; axe ya es la barrera
+  # de accesibilidad obligatoria en el job e2e).
+  # ---------------------------------------------------------------
+  lighthouse:
+    name: Lighthouse (informativo)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            apps/web/package-lock.json
+            tests/package-lock.json
+
+      - name: Instalar y construir el frontend
+        working-directory: apps/web
+        run: |
+          npm ci
+          npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+
+      - name: Instalar dependencias de pruebas
+        run: npm ci
+        working-directory: tests
+
+      - name: Ejecutar Lighthouse CI
+        run: npm run lighthouse
+        working-directory: tests

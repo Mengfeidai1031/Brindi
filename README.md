@@ -4,6 +4,14 @@
 
 # Brindi
 
+<p align="center">
+  <a href="https://github.com/tu-usuario/brindi/actions/workflows/ci.yml"><img src="https://github.com/tu-usuario/brindi/actions/workflows/ci.yml/badge.svg" alt="Estado del CI" /></a>
+  <img src="https://img.shields.io/badge/licencia-MIT-blue.svg" alt="Licencia MIT" />
+  <img src="https://img.shields.io/badge/PWA-privacidad%20por%20dise%C3%B1o-7c3aed" alt="Privacidad por diseño" />
+</p>
+
+> El badge de CI apunta a `tu-usuario/brindi`; reemplázalo por tu usuario/repo al publicar.
+
 **Brindi** es una web app (PWA) gratuita pensada para grupos de amigos y familia que quedan en persona. Resuelve tres fricciones sociales mediante tres módulos con identidad propia:
 
 - **DIVIDE** — Calculadora de división de cuentas (foto del ticket con OCR por IA o entrada manual, varios modos de reparto, resultado compartible).
@@ -37,7 +45,7 @@ flowchart LR
 
 ## Estado del proyecto
 
-Desarrollo incremental; cada incremento es funcional y verificable.
+Desarrollo incremental; cada incremento es funcional y verificable. **Las 15 etapas previstas están completas.**
 
 | # | Incremento | Estado |
 |---|------------|--------|
@@ -55,7 +63,7 @@ Desarrollo incremental; cada incremento es funcional y verificable.
 | 12 | Nginx + compose de producción + SECURITY.md | ✅ |
 | 13 | Tests unitarios + verify.sh | ✅ |
 | 14 | E2E (Playwright), accesibilidad (axe, Lighthouse), monkey, carga | ✅ |
-| 15 | CI (GitHub Actions) + Dependabot + docs finales | ⏳ |
+| 15 | CI (GitHub Actions) + Dependabot + docs finales | ✅ |
 
 ## Requisitos
 
@@ -328,6 +336,14 @@ brindi/
 - **Cascada de modelos con salida estructurada**: una sola función recorre los modelos en orden y valida el JSON con Pydantic (`response_schema`); un fallo de red o de parseo pasa al siguiente modelo. Lógica pura y testeable sin red (probada con cliente simulado).
 - **Telemetría que nunca rompe la petición**: el registro en `ai_usage` se hace de forma defensiva; si falla, se anota un aviso pero el OCR responde igual.
 - **Arranca sin clave de Gemini**: si falta `GEMINI_API_KEY`, el stack sube igualmente y el OCR responde 502, en vez de impedir el `setup-local.sh`.
+
+## Contribuir
+
+Las contribuciones son bienvenidas. Antes de empezar, lee
+**[CONTRIBUTING.md](CONTRIBUTING.md)**: explica la arquitectura, cómo ejecutar las
+pruebas (`./scripts/verify.sh` y la suite E2E), la convención de commits y el
+principio de privacidad. El CI de GitHub Actions ejecuta toda la batería y las
+pruebas E2E en cada Pull Request, y Dependabot mantiene las dependencias al día.
 
 ## Licencia
 
