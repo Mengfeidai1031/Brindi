@@ -1,0 +1,65 @@
+version: 2
+
+updates:
+  # --- Frontend (npm) ---
+  - package-ecosystem: npm
+    directory: /apps/web
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      web-minor-patch:
+        update-types: [minor, patch]
+
+  # --- API (npm) ---
+  - package-ecosystem: npm
+    directory: /apps/api
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      api-minor-patch:
+        update-types: [minor, patch]
+
+  # --- Pruebas E2E/QA (npm) ---
+  - package-ecosystem: npm
+    directory: /tests
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      tests-minor-patch:
+        update-types: [minor, patch]
+
+  # --- ai-service (pip) ---
+  - package-ecosystem: pip
+    directory: /apps/ai-service
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      ai-minor-patch:
+        update-types: [minor, patch]
+
+  # --- GitHub Actions ---
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        update-types: [minor, patch]
+
+  # --- Imágenes Docker ---
+  - package-ecosystem: docker
+    directory: /apps/web
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /apps/api
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /apps/ai-service
+    schedule:
+      interval: weekly
