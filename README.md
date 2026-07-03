@@ -37,8 +37,8 @@ flowchart LR
     W --> A["apps/api<br/>NestJS · Prisma · JWT"]
     A --> P[(PostgreSQL)]
     A --> R[(Redis<br/>sesiones · rate limit · caché)]
-    A --> AI["apps/ai-service<br/>FastAPI · fallback Gemini"]
-    AI --> G[Google Gemini]
+    A --> AI["apps/ai-service<br/>FastAPI · IA multiproveedor"]
+    AI --> G["Gemini · Groq · Mistral · Together"]
     A --> GP[Google Places]
     AI --> P
 ```
@@ -118,21 +118,21 @@ Comandos útiles desde `apps/api`: `npm run prisma:migrate:dev` (nueva migració
 
 ## ai-service (apps/ai-service)
 
-Servicio interno en **FastAPI** que encapsula las llamadas a **Google Gemini**. No se publica ningún puerto al host: solo es accesible dentro de la red de Docker y exige un secreto compartido (`INTERNAL_API_KEY`) en la cabecera `X-Internal-Key`, de modo que únicamente la API de NestJS puede invocarlo. Escribe el consumo en la tabla `ai_usage` de la misma base de datos (no persiste imágenes ni contenido).
+Servicio interno en **FastAPI** que encapsula una **cascada multiproveedor de IA** (Gemini, Groq, Mistral y Together), todos a través de la misma API OpenAI-compatible. No se publica ningún puerto al host: solo es accesible dentro de la red de Docker y exige un secreto compartido (`INTERNAL_API_KEY`) en la cabecera `X-Internal-Key`, de modo que únicamente la API de NestJS puede invocarlo. Escribe el consumo en la tabla `ai_usage` de la misma base de datos (no persiste imágenes ni contenido).
 
 Endpoints (documentados en OpenAPI, accesibles vía la API o `docker exec`):
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/health` | Estado del servicio, base de datos y si hay clave de Gemini (público) |
+| GET | `/health` | Estado del servicio, base de datos y disponibilidad de IA (visión/texto) (público) |
 | POST | `/ocr-receipt` | Recibe una imagen de ticket y devuelve ítems con importes en céntimos (interno) |
-| POST | `/generate-quiz` | Genera preguntas de trivia con Gemini; si no hay clave o falla, recurre al banco local (interno) |
-| POST | `/generate-plan` | Genera un plan de actividades con Gemini; sin clave devuelve 503 (interno) |
+| POST | `/generate-quiz` | Categorías predefinidas → banco local; tema libre "Otros" → IA (interno) |
+| POST | `/generate-plan` | Genera un plan de actividades con IA (Groq→Mistral→Together); sin proveedor, 503 (interno) |
 | GET | `/usage` | Resumen de consumo de IA por servicio (interno) |
 
-El **OCR** usa una cascada de modelos (`gemini-2.5-flash` → `gemini-2.0-flash` → `gemini-2.5-pro`): se prueban en orden y se usa el primero que responde con un JSON válido. La **generación de quiz** usa la misma estrategia de cascada y valida el JSON (exactamente 4 opciones e índice correcto en rango) antes de aceptarlo; si Gemini no está disponible o no devuelve preguntas válidas, recurre al banco `quiz_fallback_questions`. El servicio arranca aunque falte `GEMINI_API_KEY` (el OCR responde 502 y la trivia cae al banco local), para no bloquear el resto del stack.
+Todos los proveedores hablan la **API de chat OpenAI-compatible**, así que un único cliente sirve para los cuatro y la cascada es por *proveedor*, no por modelo. El **OCR** (DIVIDE) usa un **pool de claves de Gemini** por su visión: rota a la siguiente clave ante un `429` (límite de cuota) y, si se agota el pool, cae a **Groq Vision** como último recurso. La **trivia** se reparte: las categorías predefinidas se sirven 100% del banco local `quiz_fallback_questions` (gratis e infinito), y el tema libre **"Otros"** se genera con la cascada de texto (**Groq → Mistral → Together**), con respaldo al banco "Variado" si todos fallan. Cada respuesta se valida con Pydantic (exactamente 4 opciones e índice correcto en rango) antes de aceptarla. El servicio arranca aunque falten claves (las funciones afectadas responden 502/503), para no bloquear el resto del stack.
 
-La **generación de planes** usa la misma cascada y valida la estructura (actividades con título, recorte a 3). A diferencia de la trivia, un plan personalizado no se puede pre-cocinar: si Gemini no está disponible, el endpoint devuelve 503 (como el OCR). Un próximo incremento conectará el OCR al paso 2 del wizard de Divide a través de la API.
+La **generación de planes** (PLAN) usa la cascada de texto (**Groq → Mistral → Together**) y valida la estructura (actividades con título, recorte a 3). A diferencia de la trivia, un plan personalizado no se puede pre-cocinar: si no hay ningún proveedor disponible, el endpoint devuelve 503 (como el OCR).
 
 Para desarrollo sin Docker:
 
