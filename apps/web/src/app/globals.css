@@ -11,9 +11,6 @@
 @theme {
   --color-brand: #178b82;
   --color-brand-deep: #0f5f58;
-  --color-divide: #649f2b;
-  --color-decide: #d9970f;
-  --color-plan: #2387bd;
   --color-coral: #e2574c;
   /* Rojo profundo fijo para botones destructivos rellenos (texto blanco AA en ambos temas). */
   --color-danger-solid: #b23b32;
@@ -33,6 +30,12 @@
   --color-line: var(--line);
   /* Texto de error/peligro: oscuro sobre claro, claro sobre oscuro (AA en ambos). */
   --color-danger: var(--danger);
+  /* Colores de módulo (Divide verde, Decide ámbar, Plan azul): variantes por
+     tema para cumplir contraste AA (4.5:1) como texto sobre el fondo de cada
+     modo, ya que un único tono no basta para los dos fondos a la vez. */
+  --color-divide: var(--module-divide);
+  --color-decide: var(--module-decide);
+  --color-plan: var(--module-plan);
 }
 
 :root {
@@ -42,6 +45,9 @@
   --muted: #57726c;
   --line: #e8dcc4;
   --danger: #b23b32;
+  --module-divide: #4e7c21;
+  --module-decide: #93660a;
+  --module-plan: #1e76a6;
 }
 
 .dark {
@@ -51,6 +57,9 @@
   --muted: #9fbab2;
   --line: #25443f;
   --danger: #f3a39b;
+  --module-divide: #649f2b;
+  --module-decide: #d9970f;
+  --module-plan: #2789be;
 }
 
 body {

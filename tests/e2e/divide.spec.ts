@@ -8,12 +8,12 @@ test('completa el reparto a partes iguales (cálculo en cliente)', async ({ page
   await page.goto('/divide');
 
   // Paso 1 · Personas
-  await page.getByLabel('Persona 1').fill('Ana');
-  await page.getByLabel('Persona 2').fill('Luis');
+  await page.getByRole('textbox', { name: 'Persona 1' }).fill('Ana');
+  await page.getByRole('textbox', { name: 'Persona 2' }).fill('Luis');
   await page.getByRole('button', { name: 'Siguiente' }).click();
 
   // Paso 2 · La cuenta (un importe de 20 €)
-  await page.getByLabel('Importe del ítem 1').fill('20');
+  await page.getByRole('textbox', { name: 'Importe del ítem 1' }).fill('20');
   await page.getByRole('button', { name: 'Siguiente' }).click();
 
   // Paso 3 · Reparto (Partes iguales por defecto)
@@ -29,7 +29,8 @@ test('completa el reparto a partes iguales (cálculo en cliente)', async ({ page
 
 test('la pantalla de resultado no tiene violaciones serias (axe)', async ({ page }) => {
   await page.goto('/divide');
-  await page.getByLabel('Importe del ítem 1').fill('30');
+  await page.getByRole('button', { name: 'Siguiente' }).click();
+  await page.getByRole('textbox', { name: 'Importe del ítem 1' }).fill('30');
   await page.getByRole('button', { name: 'Siguiente' }).click();
   await page.getByRole('button', { name: 'Ver resultado' }).click();
   await expect(page.getByRole('heading', { name: 'Esto paga cada uno' })).toBeVisible();

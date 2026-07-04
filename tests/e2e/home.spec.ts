@@ -24,6 +24,10 @@ test.describe('Home', () => {
 
   test('no tiene violaciones de accesibilidad serias (axe)', async ({ page }) => {
     await page.goto('/');
+    // Espera a que terminen las animaciones de entrada (opacity) de Hero y
+    // ModuleCards: axe calcula el contraste efectivo con la opacidad actual,
+    // y a mitad de fundido reporta falsos positivos de bajo contraste.
+    await page.waitForTimeout(1000);
     const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
     const serious = NO_SERIOUS(violations);
     expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
