@@ -1,16 +1,17 @@
 # ============================================================
 # Brindi — Docker Compose de PRODUCCIÓN
 #
-# Topología:
-#   nginx (80/443, único expuesto) ──┬── https://${APP_DOMAIN}      -> web (Next.js)
-#                                     └── https://${API_DOMAIN}      -> api (NestJS)
+# Topología (un único dominio, válido con dominios gratuitos sin subdominios
+# propios como *.duckdns.org):
+#   nginx (80/443, único expuesto) ──┬── https://${APP_DOMAIN}/       -> web (Next.js)
+#                                     └── https://${APP_DOMAIN}/api/  -> api (NestJS)
 #   api ── ai-service (interno) ── postgres (interno, con volumen persistente)
 #
 # Ningún servicio salvo nginx publica puertos al host. La base de datos NO es
 # accesible desde fuera de la red de Docker.
 #
 # Uso:
-#   1) Copia .env.prod.example a .env.prod y rellena los secretos y dominios.
+#   1) Copia .env.prod.example a .env.prod y rellena los secretos y el dominio.
 #   2) Coloca los certificados TLS en infra/nginx/certs/{fullchain,privkey}.pem
 #   3) docker compose -f infra/docker-compose.prod.yml --env-file .env.prod up -d --build
 # ============================================================
@@ -75,10 +76,13 @@ services:
       WEB_ORIGIN: https://${APP_DOMAIN:?Define APP_DOMAIN en .env.prod}
       AI_SERVICE_URL: http://ai-service:5000
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:?Define INTERNAL_API_KEY en .env.prod}
+      # La API vive bajo /api/ del mismo dominio (nginx quita el prefijo al
+      # reenviar): la cookie de refresco debe restringirse a ese path externo.
+      REFRESH_COOKIE_PATH: /api/auth
       # Google OAuth (opcional): sin client id/secret, el login con Google se desactiva.
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      # Debe ser https://<API_DOMAIN>/auth/google/callback (ver .env.prod.example).
+      # Debe ser https://<APP_DOMAIN>/api/auth/google/callback (ver .env.prod.example).
       GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-}
     depends_on:
       postgres:
@@ -92,8 +96,9 @@ services:
       context: ../apps/web
       dockerfile: Dockerfile.prod
       args:
-        # Las NEXT_PUBLIC_* se hornean en build time: apuntan al subdominio de la API.
-        NEXT_PUBLIC_API_URL: https://${API_DOMAIN:?Define API_DOMAIN en .env.prod}
+        # Las NEXT_PUBLIC_* se hornean en build time: la API vive bajo /api/
+        # del mismo dominio (mismo origen: sin CORS ni problemas de cookies).
+        NEXT_PUBLIC_API_URL: https://${APP_DOMAIN:?Define APP_DOMAIN en .env.prod}/api
         NEXT_PUBLIC_APP_NAME: ${APP_NAME:-Brindi}
         NEXT_PUBLIC_ADSENSE_CLIENT: ${NEXT_PUBLIC_ADSENSE_CLIENT:-}
         NEXT_PUBLIC_ADSENSE_SLOT_BANNER: ${NEXT_PUBLIC_ADSENSE_SLOT_BANNER:-}
@@ -109,9 +114,8 @@ services:
     restart: always
     environment:
       APP_DOMAIN: ${APP_DOMAIN:?Define APP_DOMAIN en .env.prod}
-      API_DOMAIN: ${API_DOMAIN:?Define API_DOMAIN en .env.prod}
-      # Solo se sustituyen estas variables en la plantilla; las $ de nginx se conservan.
-      NGINX_ENVSUBST_FILTER: "APP_DOMAIN|API_DOMAIN"
+      # Solo se sustituye esta variable en la plantilla; las $ de nginx se conservan.
+      NGINX_ENVSUBST_FILTER: "APP_DOMAIN"
     volumes:
       - ./nginx/templates:/etc/nginx/templates:ro
       - ./nginx/certs:/etc/nginx/certs:ro
