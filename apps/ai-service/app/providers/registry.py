@@ -41,11 +41,20 @@ def vision_providers(settings: Settings) -> list[ProviderConfig]:
 
 
 def text_providers(settings: Settings) -> list[ProviderConfig]:
-    """Plan y trivia "Otros": Groq -> Mistral -> Together (los configurados)."""
+    """Plan y trivia "Otros": Groq -> Gemini -> Mistral -> Together (los configurados)."""
     providers: list[ProviderConfig] = []
     if settings.groq_api_key:
         providers.append(
             ProviderConfig("groq", settings.groq_base_url, settings.groq_api_key, settings.groq_text_model)
+        )
+    for i, key in enumerate(gemini_keys(settings), start=1):
+        providers.append(
+            ProviderConfig(
+                name=f"gemini-text#{i}",
+                base_url=settings.gemini_base_url,
+                api_key=key,
+                model=settings.gemini_text_model,
+            )
         )
     if settings.mistral_api_key:
         providers.append(

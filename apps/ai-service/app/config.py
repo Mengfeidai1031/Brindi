@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     gemini_api_keys: str = ""
     gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
     gemini_vision_model: str = "gemini-2.0-flash"
+    # Mismo modelo flash sirve texto puro: respaldo de trivia/plan si Groq no está
+    # disponible (p. ej. bloqueado desde la IP del servidor) y aún no hay Mistral/Together.
+    gemini_text_model: str = "gemini-2.0-flash"
 
     # Groq (texto y visión de respaldo).
     groq_api_key: str = ""
