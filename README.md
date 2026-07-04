@@ -5,12 +5,14 @@
 # Brindi
 
 <p align="center">
-  <a href="https://github.com/tu-usuario/brindi/actions/workflows/ci.yml"><img src="https://github.com/tu-usuario/brindi/actions/workflows/ci.yml/badge.svg" alt="Estado del CI" /></a>
+  <a href="https://github.com/Mengfeidai1031/Brindi/actions/workflows/ci.yml"><img src="https://github.com/Mengfeidai1031/Brindi/actions/workflows/ci.yml/badge.svg" alt="Estado del CI" /></a>
   <img src="https://img.shields.io/badge/licencia-MIT-blue.svg" alt="Licencia MIT" />
   <img src="https://img.shields.io/badge/PWA-privacidad%20por%20dise%C3%B1o-7c3aed" alt="Privacidad por diseño" />
 </p>
 
-> El badge de CI apunta a `tu-usuario/brindi`; reemplázalo por tu usuario/repo al publicar.
+<p align="center">
+  <a href="https://brindi-app.duckdns.org">brindi-app.duckdns.org</a>
+</p>
 
 **Brindi** es una web app (PWA) gratuita pensada para grupos de amigos y familia que quedan en persona. Resuelve tres fricciones sociales mediante tres módulos con identidad propia:
 
@@ -45,25 +47,16 @@ flowchart LR
 
 ## Estado del proyecto
 
-Desarrollo incremental; cada incremento es funcional y verificable. **Las 15 etapas previstas están completas.**
+**En producción**: https://brindi-app.duckdns.org
 
-| # | Incremento | Estado |
-|---|------------|--------|
-| 1 | Scaffold del monorepo + infra local (PostgreSQL + Redis) + setup | ✅ |
-| 2 | API NestJS + Prisma (schema, migraciones, seed) + Swagger | ✅ |
-| 3 | Autenticación email+password (JWT + refresh, rate limiting) | ✅ |
-| 4 | Frontend Next.js 15 + Tailwind 4 + i18n + PWA + branding | ✅ |
-| 5 | Registro/login/perfil conectados (enlace de pago opcional) | ✅ |
-| 6 | DIVIDE: wizard completo con cálculo en cliente | ✅ |
-| 7 | ai-service (FastAPI) + cascada Gemini + OCR de tickets | ✅ |
-| 8 | DECIDE: ruleta, cartas, toque simultáneo | ✅ |
-| 9 | DECIDE: quiz de grupo + trivia con IA + modo offline | ✅ |
-| 10 | PLAN: geolocalización + preferencias + plan con IA | ✅ |
-| 11 | OAuth con Google | ✅ |
-| 12 | Nginx + compose de producción + SECURITY.md | ✅ |
-| 13 | Tests unitarios + verify.sh | ✅ |
-| 14 | E2E (Playwright), accesibilidad (axe, Lighthouse), monkey, carga | ✅ |
-| 15 | CI (GitHub Actions) + Dependabot + docs finales | ✅ |
+Todos los módulos y funciones están operativos: DIVIDE (cálculo + OCR de tickets),
+DECIDE (los cinco juegos, trivia con IA), PLAN (planes con IA), cuenta de usuario con
+email/contraseña y login con Google. CI (build, tests, E2E, accesibilidad) en verde en
+`main` y `develop`.
+
+Lo único pendiente es **Google AdSense**: el sitio ya está publicado y preparado para
+activarlo (banner, `ads.txt`, CSP y política de privacidad ya integrados), solo falta la
+aprobación de Google y el ID de editor/slot una vez concedida.
 
 ## Requisitos
 
@@ -104,7 +97,7 @@ La API arranca dentro de Docker con `setup-local.sh`; en cada arranque el conten
 | POST | `/quiz` | Genera preguntas de trivia (proxy al ai-service; público) — 20 req/min |
 | POST | `/plan` | Genera un plan de actividades (proxy al ai-service; público) — 15 req/min |
 
-El access token (15 min) viaja como `Authorization: Bearer`; el refresh token (7 días) vive en una cookie `httpOnly` con `SameSite=Strict` y `path=/auth`, y se rota en cada refresco.
+El access token (15 min) viaja como `Authorization: Bearer`; el refresh token (7 días) vive en una cookie `httpOnly` con `SameSite=Strict`, y se rota en cada refresco. El `path` de la cookie es configurable (`REFRESH_COOKIE_PATH`, por defecto `/auth`) porque en producción, con la API bajo `/api/`, se ajusta a `/api/auth`.
 
 Para desarrollo directo con hot reload (sin reconstruir el contenedor):
 
@@ -127,12 +120,12 @@ Endpoints (documentados en OpenAPI, accesibles vía la API o `docker exec`):
 | GET | `/health` | Estado del servicio, base de datos y disponibilidad de IA (visión/texto) (público) |
 | POST | `/ocr-receipt` | Recibe una imagen de ticket y devuelve ítems con importes en céntimos (interno) |
 | POST | `/generate-quiz` | Categorías predefinidas → banco local; tema libre "Otros" → IA (interno) |
-| POST | `/generate-plan` | Genera un plan de actividades con IA (Groq→Mistral→Together); sin proveedor, 503 (interno) |
+| POST | `/generate-plan` | Genera un plan de actividades con IA (Groq→Gemini→Mistral→Together); sin proveedor, 503 (interno) |
 | GET | `/usage` | Resumen de consumo de IA por servicio (interno) |
 
-Todos los proveedores hablan la **API de chat OpenAI-compatible**, así que un único cliente sirve para los cuatro y la cascada es por *proveedor*, no por modelo. El **OCR** (DIVIDE) usa un **pool de claves de Gemini** por su visión: rota a la siguiente clave ante un `429` (límite de cuota) y, si se agota el pool, cae a **Groq Vision** como último recurso. La **trivia** se reparte: las categorías predefinidas se sirven 100% del banco local `quiz_fallback_questions` (gratis e infinito), y el tema libre **"Otros"** se genera con la cascada de texto (**Groq → Mistral → Together**), con respaldo al banco "Variado" si todos fallan. Cada respuesta se valida con Pydantic (exactamente 4 opciones e índice correcto en rango) antes de aceptarla. El servicio arranca aunque falten claves (las funciones afectadas responden 502/503), para no bloquear el resto del stack.
+Todos los proveedores hablan la **API de chat OpenAI-compatible**, así que un único cliente sirve para los cuatro y la cascada es por *proveedor*, no por modelo. El **OCR** (DIVIDE) usa un **pool de claves de Gemini** por su visión: rota a la siguiente clave ante un `429` (límite de cuota) y, si se agota el pool, cae a **Groq Vision** como último recurso. La **trivia** se reparte: las categorías predefinidas se sirven 100% del banco local `quiz_fallback_questions` (gratis e infinito), y el tema libre **"Otros"** se genera con la cascada de texto (**Groq → Gemini → Mistral → Together**), con respaldo al banco "Variado" si todos fallan. Cada respuesta se valida con Pydantic (exactamente 4 opciones e índice correcto en rango) antes de aceptarla. El servicio arranca aunque falten claves (las funciones afectadas responden 502/503), para no bloquear el resto del stack.
 
-La **generación de planes** (PLAN) usa la cascada de texto (**Groq → Mistral → Together**) y valida la estructura (actividades con título, recorte a 3). A diferencia de la trivia, un plan personalizado no se puede pre-cocinar: si no hay ningún proveedor disponible, el endpoint devuelve 503 (como el OCR).
+La **generación de planes** (PLAN) usa la cascada de texto (**Groq → Gemini → Mistral → Together**) y valida la estructura (actividades con título, recorte a 3). A diferencia de la trivia, un plan personalizado no se puede pre-cocinar: si no hay ningún proveedor disponible, el endpoint devuelve 503 (como el OCR).
 
 Las categorías de trivia predefinidas se sirven de un **banco local** (`quiz_fallback_questions`). Para ampliarlo hay un generador que crea preguntas con un proveedor gratuito y las fusiona en el banco: `python3 scripts/generate-quiz-bank.py` (objetivo 1.200; ver `--help`). Tras ejecutarlo se recarga la BD con `npm run prisma:seed`. El tema libre **"Otros"** del juego se genera siempre en vivo con IA, por lo que no se precarga.
 
@@ -218,25 +211,26 @@ Ver `tests/README.md` para Lighthouse, k6 y las pruebas con stack completo.
 ## Despliegue en producción
 
 El despliegue de producción se orquesta con `infra/docker-compose.prod.yml` y un
-**nginx** como reverse proxy con TLS. El frontend y la API se sirven en
-**subdominios** del mismo dominio (p. ej. `brindi.tudominio.com` y
-`api.brindi.tudominio.com`), de modo que la cookie de sesión `SameSite=Strict`
-sigue funcionando entre ambos.
+**nginx** como reverse proxy con TLS. Un **único dominio** sirve el frontend en `/`
+y hace de pasarela a la API bajo `/api/` (mismo origen: sin problemas de CORS ni de
+cookies cross-site, y compatible con dominios gratuitos sin subdominios propios
+como los de DuckDNS).
 
 Topología: **solo nginx** publica puertos (80/443). El frontend, la API, el
 `ai-service` y PostgreSQL viven en la red interna de Docker; la base de datos no
 es accesible desde fuera.
 
 ```
-nginx (80/443) ──┬── https://APP_DOMAIN  -> web (Next.js, imagen standalone)
-                 └── https://API_DOMAIN  -> api (NestJS)
+nginx (80/443) ──┬── https://APP_DOMAIN/       -> web (Next.js, imagen standalone)
+                 └── https://APP_DOMAIN/api/   -> api (NestJS)
 api ── ai-service (interno) ── postgres (interno, volumen persistente)
 ```
 
 Pasos:
 
-1. Copia `.env.prod.example` a `.env.prod` y rellena dominios y secretos
-   (`openssl rand -hex 48` para los JWT, etc.).
+1. Copia `.env.prod.example` a `.env.prod` y rellena el dominio y los secretos
+   (`openssl rand -hex 48` para los JWT, `openssl rand -hex 32` para el resto —
+   evita `base64` porque puede colar caracteres que rompen la URL de conexión).
 2. Coloca los certificados TLS en `infra/nginx/certs/{fullchain,privkey}.pem`
    (Let's Encrypt o, para pruebas, autofirmados; ver el README de esa carpeta).
 3. Arranca:
@@ -247,7 +241,7 @@ Pasos:
 
 La imagen del frontend es **multi-stage con salida `standalone`** de Next.js
 (`Dockerfile.prod`), por lo que es mínima. Las variables `NEXT_PUBLIC_*` se
-hornean en build time apuntando al subdominio de la API. La API confía en
+hornean en build time apuntando a `https://APP_DOMAIN/api`. La API confía en
 `X-Forwarded-For` (`trust proxy`) para aplicar el rate limiting por la IP real, y
 la documentación Swagger se desactiva en producción.
 
@@ -263,11 +257,11 @@ brindi/
 │   ├── api/               # Backend NestJS + Prisma (health, Swagger, migraciones, seed)
 │   ├── web/               # Frontend Next.js 15 (PWA, i18n ES/EN, Tailwind 4)
 │   └── ai-service/        # Servicio FastAPI (cascada Gemini: OCR de tickets)
-├── packages/              # (próximos incrementos) shared-types
+├── packages/              # reservado para tipos compartidos entre apps
 ├── assets/branding/       # logo e icono oficiales
-├── infra/                 # docker-compose.yml (+ nginx y prod más adelante)
-├── scripts/               # setup-local.sh (+ verify.sh y auditorías más adelante)
-├── tests/                 # (próximos incrementos) e2e, load, monkey
+├── infra/                 # docker-compose.yml (local) + prod (nginx, TLS, compose)
+├── scripts/               # setup-local.sh, verify.sh, generate-quiz-bank.py
+├── tests/                 # E2E (Playwright), accesibilidad (axe), Lighthouse, carga (k6)
 ├── .env.example
 ├── LICENSE
 └── README.md
@@ -286,7 +280,7 @@ brindi/
 - **`@@unique([category, question])`**: habilita un seed idempotente (`createMany` + `skipDuplicates`) que se ejecuta en cada arranque del contenedor sin duplicar filas.
 - **Migración inicial versionada y revisada a mano** con el formato exacto del generador de Prisma, aplicada y verificada contra PostgreSQL 16.
 - **bcryptjs (12 rondas)** en lugar del `bcrypt` nativo: mismo algoritmo, implementación JS pura que evita la toolchain de compilación nativa en imágenes Alpine (builds reproducibles y más simples).
-- **Refresh token stateless con rotación**: JWT de refresco (7 días) en cookie `httpOnly` + `SameSite=Strict` + `path=/auth`, firmado con un secreto distinto al del access token (15 min). Sin tabla de tokens (esquema minimalista): el logout elimina la cookie y la baja lógica invalida cualquier token al instante porque la estrategia JWT consulta `deleted_at` en cada petición. Trade-off documentado: no hay lista de revocación server-side.
+- **Refresh token stateless con rotación**: JWT de refresco (7 días) en cookie `httpOnly` + `SameSite=Strict` + `path` configurable (`/auth` en local, `/api/auth` en producción), firmado con un secreto distinto al del access token (15 min). Sin tabla de tokens (esquema minimalista): el logout elimina la cookie y la baja lógica invalida cualquier token al instante porque la estrategia JWT consulta `deleted_at` en cada petición. Trade-off documentado: no hay lista de revocación server-side.
 - **Rate limiting con `@nestjs/throttler`**: 10 req/min en login/registro (equivalente a `throttle:10,1`), límite global laxo de 100 req/min. Almacenamiento en memoria por ahora; pasará a Redis cuando haya varias instancias.
 - **Anti-enumeración en login**: mensaje idéntico (`Credenciales inválidas`) tanto si el email no existe como si la contraseña falla o la cuenta está dada de baja.
 - **Baja lógica (`deleted_at`)**: el email no es reutilizable tras la baja (índice único); una futura reactivación se haría por soporte/proceso explícito.
