@@ -95,6 +95,8 @@ services:
         # Las NEXT_PUBLIC_* se hornean en build time: apuntan al subdominio de la API.
         NEXT_PUBLIC_API_URL: https://${API_DOMAIN:?Define API_DOMAIN en .env.prod}
         NEXT_PUBLIC_APP_NAME: ${APP_NAME:-Brindi}
+        NEXT_PUBLIC_ADSENSE_CLIENT: ${NEXT_PUBLIC_ADSENSE_CLIENT:-}
+        NEXT_PUBLIC_ADSENSE_SLOT_BANNER: ${NEXT_PUBLIC_ADSENSE_SLOT_BANNER:-}
     container_name: brindi-web-prod
     restart: always
     depends_on:

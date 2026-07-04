@@ -307,7 +307,8 @@
       "instructions": "Poned todos un dedo en la pantalla y esperad.",
       "needMore": "Hacen falta al menos 2 dedos.",
       "chosen": "¡Elegido!",
-      "reset": "Otra vez"
+      "reset": "Otra vez",
+      "start": "Empezar"
     },
     "trivia": {
       "heading": "Trivia",
@@ -446,6 +447,23 @@
   },
   "footer": {
     "privacy": "Privacidad por diseño: tus datos no se guardan.",
-    "rights": "Código abierto bajo licencia MIT."
+    "rights": "Código abierto bajo licencia MIT.",
+    "privacyLink": "Privacidad"
+  },
+  "ads": {
+    "label": "Publicidad"
+  },
+  "privacy": {
+    "heading": "Política de privacidad",
+    "intro": "Brindi está diseñada para guardar lo mínimo. Esta página explica qué datos se tratan y cuáles no.",
+    "noStoreTitle": "Lo que NO se guarda",
+    "noStore": "No almacenamos tickets, importes, divisiones, ubicaciones, resultados de juegos ni planes. Esos datos se calculan en el momento y se descartan; nunca se persisten.",
+    "accountTitle": "Datos de cuenta",
+    "account": "Si creas una cuenta, guardamos tu email y una versión cifrada de tu contraseña (o tu identificador de Google si entras con Google), más un enlace de pago opcional. Puedes eliminar tu cuenta cuando quieras.",
+    "adsTitle": "Publicidad y cookies",
+    "ads": "Mostramos anuncios de Google AdSense para mantener la app gratuita. Google y sus socios pueden usar cookies para mostrar anuncios; en el Espacio Económico Europeo se te pedirá consentimiento mediante el mensaje de Google. Puedes gestionar tus preferencias en los ajustes de anuncios de Google.",
+    "contactTitle": "Contacto",
+    "contact": "Para cualquier duda sobre privacidad, contacta con el responsable de la aplicación.",
+    "adsChoicesLink": "Ajustes de anuncios de Google"
   }
 }

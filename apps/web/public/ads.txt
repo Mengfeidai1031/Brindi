@@ -1,0 +1,4 @@
+# Brindi - ads.txt para Google AdSense
+# Sustituye pub-0000000000000000 por tu ID de editor (sin el prefijo "ca-").
+# Lo encuentras en AdSense > Cuenta > Información de la cuenta (ca-pub-XXXX).
+google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0

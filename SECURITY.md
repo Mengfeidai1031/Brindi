@@ -105,6 +105,16 @@ nginx añade en producción:
   (`INTERNAL_API_KEY`) / `-base64 32` (contraseña de BD).
 - La documentación OpenAPI (Swagger) está **desactivada en producción**.
 
+## Publicidad (Google AdSense)
+
+La app muestra anuncios de Google AdSense para sostener el servicio gratuito. Esto introduce cookies de terceros gestionadas por Google, un compromiso conocido frente al enfoque privacidad-primero del resto de la aplicación:
+
+- La publicidad **solo se activa** si se define `NEXT_PUBLIC_ADSENSE_CLIENT`; sin esa variable no se carga ningún script de anuncios (desarrollo, tests y CI quedan libres de anuncios).
+- En el **Espacio Económico Europeo** es obligatorio un CMP de consentimiento certificado. Se usa el mensaje de consentimiento **gratuito e integrado de Google** ("Privacy & messaging"/Funding Choices), que se activa en el panel de AdSense y se entrega con la propia etiqueta de AdSense.
+- La **CSP** de producción incluye los dominios de Google necesarios para servir anuncios y el mensaje de consentimiento; el resto de la política sigue siendo restrictiva.
+- Existe una **política de privacidad** (`/privacidad`, enlazada en el pie) que detalla qué datos no se guardan y el uso de cookies publicitarias.
+- El anuncio se sirve como banner inferior **no intrusivo** y se **oculta durante el juego de Toque** (que muestra el anuncio solo en reposo).
+
 ## Mejoras de seguridad previstas
 
 Aspectos conocidos que se reforzarán más adelante:

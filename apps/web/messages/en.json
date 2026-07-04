@@ -307,7 +307,8 @@
       "instructions": "Everyone put a finger on the screen and wait.",
       "needMore": "You need at least 2 fingers.",
       "chosen": "Chosen!",
-      "reset": "Again"
+      "reset": "Again",
+      "start": "Start"
     },
     "trivia": {
       "heading": "Trivia",
@@ -446,6 +447,23 @@
   },
   "footer": {
     "privacy": "Privacy by design: your data is not stored.",
-    "rights": "Open source under the MIT license."
+    "rights": "Open source under the MIT license.",
+    "privacyLink": "Privacy"
+  },
+  "ads": {
+    "label": "Advertisement"
+  },
+  "privacy": {
+    "heading": "Privacy policy",
+    "intro": "Brindi is built to store as little as possible. This page explains which data is processed and which is not.",
+    "noStoreTitle": "What is NOT stored",
+    "noStore": "We do not store receipts, amounts, splits, locations, game results or plans. That data is computed on the fly and discarded; it is never persisted.",
+    "accountTitle": "Account data",
+    "account": "If you create an account, we store your email and an encrypted version of your password (or your Google ID if you sign in with Google), plus an optional payment link. You can delete your account at any time.",
+    "adsTitle": "Advertising and cookies",
+    "ads": "We show Google AdSense ads to keep the app free. Google and its partners may use cookies to serve ads; in the European Economic Area you will be asked for consent through Google’s message. You can manage your preferences in Google’s ad settings.",
+    "contactTitle": "Contact",
+    "contact": "For any privacy questions, contact the application owner.",
+    "adsChoicesLink": "Google ad settings"
   }
 }
