@@ -134,6 +134,8 @@ Todos los proveedores hablan la **API de chat OpenAI-compatible**, así que un �
 
 La **generación de planes** (PLAN) usa la cascada de texto (**Groq → Mistral → Together**) y valida la estructura (actividades con título, recorte a 3). A diferencia de la trivia, un plan personalizado no se puede pre-cocinar: si no hay ningún proveedor disponible, el endpoint devuelve 503 (como el OCR).
 
+Las categorías de trivia predefinidas se sirven de un **banco local** (`quiz_fallback_questions`). Para ampliarlo hay un generador que crea preguntas con un proveedor gratuito y las fusiona en el banco: `python3 scripts/generate-quiz-bank.py` (objetivo 1.200; ver `--help`). Tras ejecutarlo se recarga la BD con `npm run prisma:seed`. El tema libre **"Otros"** del juego se genera siempre en vivo con IA, por lo que no se precarga.
+
 Para desarrollo sin Docker:
 
 ```bash
