@@ -32,7 +32,7 @@ export async function generateMetadata({
     applicationName: APP_NAME,
     manifest: '/manifest.webmanifest',
     appleWebApp: { capable: true, title: APP_NAME, statusBarStyle: 'default' },
-    icons: { apple: '/icons/apple-touch-icon.png' },
+    icons: { icon: '/icons/icon-192.png', apple: '/icons/apple-touch-icon.png' },
   };
 }
 
