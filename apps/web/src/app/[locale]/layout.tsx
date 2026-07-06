@@ -27,7 +27,7 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: 'meta' });
 
   return {
-    title: { default: `${APP_NAME} — Divide. Decide. Plan.`, template: `%s · ${APP_NAME}` },
+    title: { default: `${APP_NAME} - Divide. Decide. Plan.`, template: `%s · ${APP_NAME}` },
     description: t('description'),
     applicationName: APP_NAME,
     manifest: '/manifest.webmanifest',
