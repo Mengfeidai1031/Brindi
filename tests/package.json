@@ -11,8 +11,8 @@
     "load": "k6 run load/smoke.js"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.10.0",
-    "@playwright/test": "^1.49.0",
-    "@lhci/cli": "^0.14.0"
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.61.1",
+    "@lhci/cli": "^0.15.1"
   }
 }
