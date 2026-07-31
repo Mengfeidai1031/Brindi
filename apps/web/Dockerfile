@@ -3,7 +3,7 @@
 # (la imagen multi-stage optimizada para producción llegará con
 # el incremento de infraestructura de producción)
 # ============================================================
-FROM node:22-alpine
+FROM node:25-alpine
 
 WORKDIR /app
 
